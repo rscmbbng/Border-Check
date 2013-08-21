@@ -38,7 +38,7 @@ while True:
 		count = 0
 		print url
 
-		## Run LFT (layer four traceroute) on the ip as a subprocess and pipe back into script.
+		## Run LFT (layer four traceroute, http://pwhois.org/lft/) on the ip as a subprocess and pipe back into script.
 		## In NL this has worked flawlessly for me
 		## however since i'm in the Laboral all tracerts using TCP fail and the one with UDP find a path, but
 		## fail to reach the destination. Perhaps it has to do with the network configuration here, but we should 
