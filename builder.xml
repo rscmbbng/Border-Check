@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<interface>
+  <!-- interface-requires gtk+ 2.12 -->
+  <!-- interface-naming-policy toplevel-contextual -->
+  <object class="GtkTextBuffer" id="textbuffer1"/>
+  <object class="GtkAction" id="action1"/>
+  <object class="GtkWindow" id="window">
+    <property name="visible">True</property>
+    <property name="title" translatable="yes">Border Check - GTK Version</property>
+    <property name="window_position">center</property>
+    <child>
+      <object class="GtkImage" id="map1">
+        <property name="visible">True</property>
+        <property name="pixbuf">WM1.svg</property>
+      </object>
+    </child>
+  </object>
+</interface>

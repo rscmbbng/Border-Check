@@ -1,0 +1,20 @@
+#!/usr/bin/python
+# -*- coding: iso-8859-15 -*-
+"""
+BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
+GPLv3 - 2013 by psy (epsylon@riseup.net)
+"""
+from main import bc
+
+class NullOutput(object):
+    def write(self, text):
+        pass
+    def flush(self):
+        pass
+
+if __name__ == "__main__":
+    app = bc()
+    options = app.create_options()
+    if options:
+        app.set_options(options)
+        app.run()
