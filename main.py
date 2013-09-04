@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
@@ -26,12 +26,12 @@ DEBUG = 1
 
 class bc(object):
     """
-    BC main Class
-    """
+BC main Class
+"""
     def __init__(self):
         """
-        Init defaults
-        """
+Init defaults
+"""
         self.browser = "" # "F" Firefox / "C" Chrome
         self.browser_path = ""
         self.url = ""
@@ -39,14 +39,14 @@ class bc(object):
 
     def set_options(self, options):
         """
-        Set program options
-        """
+Set program options
+"""
         self.options = options
 
     def create_options(self, args=None):
         """
-        Create options for OptionParser
-        """
+Create options for OptionParser
+"""
         self.optionParser = BCOptions()
         self.options = self.optionParser.get_options(args)
         if not self.options:
@@ -55,8 +55,8 @@ class bc(object):
 
     def try_running(self, func, error, args=None):
         """
-        Try running a function and print some error if it fails and exists with a fatal error.
-        """
+Try running a function and print some error if it fails and exists with a fatal error.
+"""
         options = self.options
         args = args or []
         try:
@@ -70,10 +70,10 @@ class bc(object):
                 if DEBUG:
                     traceback.print_exc()
 
-    def check_browser(self): 
+    def check_browser(self):
         """
-        Check for browser used by system
-        """
+Check for browser used by system
+"""
         if sys.platform == 'darwin':
             f_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
             c_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
@@ -81,26 +81,26 @@ class bc(object):
             try:
                 if os.path.exists(f_osx):
                     if len(os.listdir(f_osx)) > 2:
-                            print 'you have multiple profiles, choosing the last one used'
-                            #filtering the directory that was last modified
-                            all_subdirs = [os.path.join(f_osx,d)for d in os.listdir(f_osx)]
-                            try: 
-                                all_subdirs.remove(os.path.join(f_osx,'.DS_Store')) #throwing out .DS_store
-                            except:
-                                pass
-                            latest_subdir = max(all_subdirs, key=os.path.getmtime)
+                        print 'you have multiple profiles, choosing the last one used'
+                        #filtering the directory that was last modified
+                        all_subdirs = [os.path.join(f_osx,d)for d in os.listdir(f_osx)]
+                        try:
+                            all_subdirs.remove(os.path.join(f_osx,'.DS_Store')) #throwing out .DS_store
+                        except:
+                            pass
+                        latest_subdir = max(all_subdirs, key=os.path.getmtime)
 
-                            osx_profile = os.path.join(f_osx, latest_subdir)
-                            osx_history_path = os.path.join(osx_profile, 'places.sqlite')
-                            self.browser_path = osx_history_path
+                        osx_profile = os.path.join(f_osx, latest_subdir)
+                        osx_history_path = os.path.join(osx_profile, 'places.sqlite')
+                        self.browser_path = osx_history_path
 
-                        else:
-                            for folder in os.listdir(f_osx):
-                                if folder.endswith('.default'):
-                                    osx_default = os.path.join(f_osx, folder)
-                                    osx_history_path = os.path.join(osx_default, 'places.sqlite')
-                                    print "setting:", osx_history_path, "as history file"
-                                    self.browser_path = osx_history_path
+                    else:
+                        for folder in os.listdir(f_osx):
+                            if folder.endswith('.default'):
+                                osx_default = os.path.join(f_osx, folder)
+                                osx_history_path = os.path.join(osx_default, 'places.sqlite')
+                                print "setting:", osx_history_path, "as history file"
+                                self.browser_path = osx_history_path
 
                     self.browser = "F"
 
@@ -140,10 +140,10 @@ class bc(object):
 
     def getURL(self):
         """
-        Set urls to visit
-        """
+Set urls to visit
+"""
         print "Browser database:", self.browser_path, "\n"
-        conn = sqlite3.connect(self.browser_path) 
+        conn = sqlite3.connect(self.browser_path)
         c = conn.cursor()
 
         if self.browser == "F": #Firefox history database
@@ -164,8 +164,8 @@ class bc(object):
 
     def getGEO(self):
         """
-        Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
-        """
+Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
+"""
         # Download and extract database
         try:
             urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
@@ -182,9 +182,9 @@ class bc(object):
         geoip= pygeoip.GeoIP('GeoLiteCity.dat')
 
     def run(self, opts=None):
-        """ 
-        Run BorderCheck
-        """ 
+        """
+Run BorderCheck
+"""
         #eprint = sys.stderr.write
         # set options
         if opts:
@@ -206,19 +206,19 @@ class bc(object):
         BorderCheckWebserver(self)
 
         while True:
-	    url = urlparse(self.url[0]).netloc
-	    url = url.replace('www.','') #--> doing a tracert to for example.com and www.example.com yields different results most of the times.
-	    url_ip = socket.gethostbyname(url)
+            url = urlparse(self.url[0]).netloc
+            url = url.replace('www.','') #--> doing a tracert to for example.com and www.example.com yields different results most of the times.
+            url_ip = socket.gethostbyname(url)
             print url_ip
-	    if url != self.old_url:
-		count = 0
-		print url
+            if url != self.old_url:
+                count = 0
+                print url
 
-		a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
-		#a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
-		logfile = open('logfile', 'a')
+                a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
+                #a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
+                logfile = open('logfile', 'a')
 
-		for line in a.stdout:
+                for line in a.stdout:
                     logfile.write(line)
                     parts = line.split()
                     for ip in parts:
@@ -231,7 +231,7 @@ class bc(object):
                                     city = record['city']
                                     print count, "While surfing you got to "+ip+" which is in "+city+", "+country
                                 elif record.has_key('country_name'):
-                                    country = record['country_name']		
+                                    country = record['country_name']    
                                     print count, "While surfing you got to "+ip+" which is in "+country
                                     time.sleep(0.3)
                                     count+=1
@@ -239,10 +239,10 @@ class bc(object):
                                 print "Not more records. Aborting...", "\n"
                                 exit()
 
-		self.old_url = url
-		print"old url =", self.old_url
-	    logfile.close()
-	    time.sleep(5)
+            self.old_url = url
+            print"old url =", self.old_url
+            logfile.close()
+            time.sleep(5)
 
 if __name__ == "__main__":
     app = bc()
@@ -250,4 +250,3 @@ if __name__ == "__main__":
     if options:
         app.set_options(options)
         app.run()
-
