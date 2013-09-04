@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
@@ -19,7 +19,7 @@ except:
 
 import subprocess, socket
 from options import BCOptions
-from bc_gtk import BCGTK
+from webserver import BorderCheckWebserver
 
 # set to emit debug messages about errors (0 = off).
 DEBUG = 1
@@ -138,9 +138,6 @@ class bc(object):
                 self.browser_path = chromium_lin
 
 
-
-
-
     def getURL(self):
         """
         Set urls to visit
@@ -204,8 +201,9 @@ class bc(object):
         # extract url
         url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
         print "url:", self.url
-        # start gtk mode
-        BCGTK.run()
+        # start web mode
+        print("Running webserver\n")
+        BorderCheckWebserver(self)
 
         while True:
 	    url = urlparse(self.url[0]).netloc
