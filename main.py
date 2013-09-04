@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
@@ -77,7 +77,7 @@ class bc(object):
         b = subprocess.Popen(['locate', 'places.sqlite']) # check for Firefox
         if b != "":
             self.browser = "F" #Firefox
-            self.browser_path = "/home/psy/.mozilla/firefox/cq3sfq0e.default/places.sqlite" #automatic extracion of path
+            self.browser_path = "/Users/ARRA/Library/Application Support/Firefox/Profiles/m9absgs2.default/places.sqlite" #automatic extracion of path
         else:
             self.browser = "C" #Chrome
             self.browser_path = ""
