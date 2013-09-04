@@ -74,13 +74,72 @@ class bc(object):
         """
         Check for browser used by system
         """
-        b = subprocess.Popen(['locate', 'places.sqlite']) # check for Firefox
-        if b != "":
-            self.browser = "F" #Firefox
-            self.browser_path = "/Users/ARRA/Library/Application Support/Firefox/Profiles/m9absgs2.default/places.sqlite" #automatic extracion of path
-        else:
-            self.browser = "C" #Chrome
-            self.browser_path = ""
+        if sys.platform == 'darwin':
+            f_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
+            c_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
+            chromium_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
+            try:
+                if os.path.exists(f_osx):
+                    if len(os.listdir(f_osx)) > 2:
+                            print 'you have multiple profiles, choosing the last one used'
+                            #filtering the directory that was last modified
+                            all_subdirs = [os.path.join(f_osx,d)for d in os.listdir(f_osx)]
+                            try: 
+                                all_subdirs.remove(os.path.join(f_osx,'.DS_Store')) #throwing out .DS_store
+                            except:
+                                pass
+                            latest_subdir = max(all_subdirs, key=os.path.getmtime)
+
+                            osx_profile = os.path.join(f_osx, latest_subdir)
+                            osx_history_path = os.path.join(osx_profile, 'places.sqlite')
+                            self.browser_path = osx_history_path
+
+                        else:
+                            for folder in os.listdir(f_osx):
+                                if folder.endswith('.default'):
+                                    osx_default = os.path.join(f_osx, folder)
+                                    osx_history_path = os.path.join(osx_default, 'places.sqlite')
+                                    print "setting:", osx_history_path, "as history file"
+                                    self.browser_path = osx_history_path
+
+                    self.browser = "F"
+
+                elif os.path.exists(c_osx):
+                    self.browser = "C"
+                    self.browser_path = c_osx
+
+                elif os.path.exists(chromium_osx):
+                    self.browser = "CHROMIUM"
+                    self.browser_path = chromium_osx
+
+            except:
+                print "no firefox or chrome installed"
+
+        elif sys.platform.startswith('linux'):
+            f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
+            c_lin = os.path.join(os.path.expanduser('~'), '.config/google-chrome/History')
+            chromium_lin = os.path.join(os.path.expanduser('~'), '.config/chromium/Default/History')
+
+            if os.path.exists(f_lin):
+                #missing multiple profile support
+                for folder in os.listdir(f_lin):
+                    if folder.endswith('.default'):
+                        lin_default = os.path.join(f_lin, folder)
+                        lin_history_path = os.path.join(lin_default, 'places.sqlite')
+                        self.browser = "F"
+                        self.browser_path = lin_history_path
+
+            elif os.path.exists(c_lin):
+                self.browser = "C"
+                self.browser_path = c_lin
+
+            elif os.path.exists(chromium_lin):
+                self.browser = "CHROMIUM"
+                self.browser_path = chromium_lin
+
+
+
+
 
     def getURL(self):
         """
