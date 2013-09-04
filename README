@@ -1,5 +1,11 @@
-Border Check (BC) is an art project to visualize the physical infrastructure of the internet using free software tools.
-Currently working on v.01 of the software and a better version of this text.
+Border Check (BC) is a browser extension that illustrates the physical and political realities of the internet's infrastructure using free software tools.
+
+As one surfs the net, data packets are sent from the user's computer to the target server. These data packets go on a journey hopping from server to server, potentially crossing multiple countries, until the packets reach the desired website. In each of the countries that are passed different laws and practices can apply to the data, influencing whether or not authorities can inspect, store or modify that data.
+
+In realtime BC lets you know which countries you surfs through as you browses the web. Additionally BC will illustrate this process on a world map and (where available) provide you with contextualizing information on that country's laws and practices regarding your data.
+
+for OSX and Linux
+v.01 
 
 GPLv3 - 2013
 
