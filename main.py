@@ -26,12 +26,12 @@ DEBUG = 1
 
 class bc(object):
     """
-BC main Class
-"""
+    BC main Class
+    """
     def __init__(self):
         """
-Init defaults
-"""
+        Init defaults
+        """
         self.browser = "" # "F" Firefox / "C" Chrome
         self.browser_path = ""
         self.url = ""
@@ -39,14 +39,14 @@ Init defaults
 
     def set_options(self, options):
         """
-Set program options
-"""
+        Set program options
+        """
         self.options = options
 
     def create_options(self, args=None):
         """
-Create options for OptionParser
-"""
+        Create options for OptionParser
+        """
         self.optionParser = BCOptions()
         self.options = self.optionParser.get_options(args)
         if not self.options:
@@ -55,8 +55,8 @@ Create options for OptionParser
 
     def try_running(self, func, error, args=None):
         """
-Try running a function and print some error if it fails and exists with a fatal error.
-"""
+        Try running a function and print some error if it fails and exists with a fatal error.
+        """
         options = self.options
         args = args or []
         try:
@@ -72,8 +72,8 @@ Try running a function and print some error if it fails and exists with a fatal 
 
     def check_browser(self):
         """
-Check for browser used by system
-"""
+        Check browsers used by system
+        """
         if sys.platform == 'darwin':
             f_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
             c_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
@@ -81,7 +81,7 @@ Check for browser used by system
             try:
                 if os.path.exists(f_osx):
                     if len(os.listdir(f_osx)) > 2:
-                        print 'you have multiple profiles, choosing the last one used'
+                        print 'You have multiple profiles, choosing the last one used'
                         #filtering the directory that was last modified
                         all_subdirs = [os.path.join(f_osx,d)for d in os.listdir(f_osx)]
                         try:
@@ -89,37 +89,30 @@ Check for browser used by system
                         except:
                             pass
                         latest_subdir = max(all_subdirs, key=os.path.getmtime)
-
                         osx_profile = os.path.join(f_osx, latest_subdir)
                         osx_history_path = os.path.join(osx_profile, 'places.sqlite')
                         self.browser_path = osx_history_path
-
                     else:
                         for folder in os.listdir(f_osx):
                             if folder.endswith('.default'):
                                 osx_default = os.path.join(f_osx, folder)
                                 osx_history_path = os.path.join(osx_default, 'places.sqlite')
-                                print "setting:", osx_history_path, "as history file"
+                                print "Setting:", osx_history_path, "as history file"
                                 self.browser_path = osx_history_path
-
                     self.browser = "F"
-
                 elif os.path.exists(c_osx):
                     self.browser = "C"
                     self.browser_path = c_osx
-
                 elif os.path.exists(chromium_osx):
                     self.browser = "CHROMIUM"
                     self.browser_path = chromium_osx
-
             except:
-                print "no firefox or chrome installed"
+                print "Warning: No firefox or chrome installed."
 
         elif sys.platform.startswith('linux'):
             f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
             c_lin = os.path.join(os.path.expanduser('~'), '.config/google-chrome/History')
             chromium_lin = os.path.join(os.path.expanduser('~'), '.config/chromium/Default/History')
-
             if os.path.exists(f_lin):
                 #missing multiple profile support
                 for folder in os.listdir(f_lin):
@@ -128,20 +121,17 @@ Check for browser used by system
                         lin_history_path = os.path.join(lin_default, 'places.sqlite')
                         self.browser = "F"
                         self.browser_path = lin_history_path
-
             elif os.path.exists(c_lin):
                 self.browser = "C"
                 self.browser_path = c_lin
-
             elif os.path.exists(chromium_lin):
                 self.browser = "CHROMIUM"
                 self.browser_path = chromium_lin
 
-
     def getURL(self):
         """
-Set urls to visit
-"""
+        Set urls to visit
+        """
         print "Browser database:", self.browser_path, "\n"
         conn = sqlite3.connect(self.browser_path)
         c = conn.cursor()
@@ -149,10 +139,6 @@ Set urls to visit
         if self.browser == "F": #Firefox history database
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
         elif self.browser == "C": #Chrome history database
-            # Linux: /home/$USER/.config/google-chrome/
-            # Linux: /home/$USER/.config/chromium/
-            # Windows Vista (and Win 7): C:\Users\[USERNAME]\AppData\Local\Google\Chrome\
-            # Windows XP: C:\Documents and Settings\[USERNAME]\Local Settings\Application Data\Google\Chrome\
             c.execute('select urls.url, urls.title, urls.visit_count, urls.typed_count, urls.last_visit_time, urls.hidden, visits.visit_time, visits.from_visit, visits.transition from urls, visits where urls.id = visits.url')
         else: # Browser not allowed
             print "\nSorry, you haven't a compatible browser\n\n"
@@ -164,8 +150,8 @@ Set urls to visit
 
     def getGEO(self):
         """
-Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
-"""
+        Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
+        """
         # Download and extract database
         try:
             urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
@@ -183,9 +169,8 @@ Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
 
     def run(self, opts=None):
         """
-Run BorderCheck
-"""
-        #eprint = sys.stderr.write
+        Run BorderCheck
+        """
         # set options
         if opts:
             options = self.create_options(opts)
@@ -203,17 +188,16 @@ Run BorderCheck
         print "url:", self.url
         # start web mode
         print("Running webserver\n")
-        BorderCheckWebserver(self)
+        BorderCheckWebserver(self) #child process or another thread
 
         while True:
             url = urlparse(self.url[0]).netloc
-            url = url.replace('www.','') #--> doing a tracert to for example.com and www.example.com yields different results most of the times.
+            url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
             url_ip = socket.gethostbyname(url)
             print url_ip
             if url != self.old_url:
                 count = 0
                 print url
-
                 a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
                 #a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
                 logfile = open('logfile', 'a')
@@ -240,7 +224,7 @@ Run BorderCheck
                                 exit()
 
             self.old_url = url
-            print"old url =", self.old_url
+            print "old url = ", self.old_url
             logfile.close()
             time.sleep(5)
 
