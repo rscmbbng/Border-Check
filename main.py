@@ -104,7 +104,7 @@ class bc(object):
                     self.browser = "CHROMIUM"
                     self.browser_path = chromium_osx
             except:
-                print "Warning: No firefox or chrome installed."
+                print "Warning: No Firefox, Chrome or Chromium installed."
 
         elif sys.platform.startswith('linux'):
             f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
@@ -154,56 +154,13 @@ class bc(object):
         print "Fetching URL:", self.url[0], "\n"
         return url[0]
 
-    def getGEO(self):
-        """
-        Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
-        """
-        # Download and extract database
-        try:
-            urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
-                                      geo_db_path+'.gz', reportfunc)
-        except:
-            try:
-                urllib.urlretrieve('http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
-                                      geo_db_path+'.gz', reportfunc)
-            except:
-                print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
-                sys.exit(2)
-
-        # Set database
-        geoip= pygeoip.GeoIP('GeoLiteCity.dat')
-
-    def run(self, opts=None):
-        """
-        Run BorderCheck
-        """
-        # set options
-        if opts:
-            options = self.create_options(opts)
-            self.set_options(options)
-        options = self.options
-        p = self.optionParser
-        # banner
-        print('='*75)
-        print(str(p.version))
-        print('='*75)
-        # extract browser type and path
-        browser = self.try_running(self.check_browser, "\nInternal error checking browser files path.")
-        # extract url
-        url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
-        print "url:", self.url
-        # start web mode
-        print("Running webserver\n")
-        BorderCheckWebserver(self) #child process or another thread
-
+    def traces(self):
         while True:
             url = urlparse(self.url[0]).netloc
             url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
             url_ip = socket.gethostbyname(url)
-            print url_ip
             if url != self.old_url:
                 count = 0
-                print url
                 a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
                 #a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
                 logfile = open('logfile', 'a')
@@ -233,6 +190,61 @@ class bc(object):
             print "old url = ", self.old_url
             logfile.close()
             time.sleep(5)
+
+    def getGEO(self):
+        """
+        Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
+        """
+        # Download and extract database
+        import urllib
+        geo_db_path = "geo/"
+        if not os.path.exists(os.path.dirname(geo_db_path)):
+            os.makedirs(os.path.dirname(geo_db_path))
+        try:
+            print "Downloading GeoIP database...\n"
+            urllib.urlretrieve('http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
+                                geo_db_path+'GeoLiteCity.gz')
+        except:
+            try:
+                urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
+                                    geo_db_path+'GeoLiteCity.gz')
+            except:
+                print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
+                sys.exit(2)
+        else:
+            f_in = gzip.open(geo_db_path+'GeoLiteCity.gz', 'rb')
+            f_out = open(geo_db_path, 'wb')
+            f_out.write(f_in.read())
+            f_in.close()
+            os.remove(geo_db_path+'GeoIPdb.gz')
+
+        # Set database (GeoLiteCity)
+        geoip= pygeoip.GeoIP(geo_db_path + 'GeoLiteCity.dat')
+
+    def run(self, opts=None):
+        """
+        Run BorderCheck
+        """
+        # set options
+        if opts:
+            options = self.create_options(opts)
+            self.set_options(options)
+        options = self.options
+        p = self.optionParser
+        # banner
+        print('='*75)
+        print(str(p.version))
+        print('='*75)
+        # extract browser type and path
+        browser = self.try_running(self.check_browser, "\nInternal error checking browser files path.")
+        # extract url
+        url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
+        # set geoip database
+        geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
+        # run traceroutes
+        traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+        # start web mode
+        BorderCheckWebserver(self) #child process or another thread
 
 if __name__ == "__main__":
     app = bc()
