@@ -117,7 +117,7 @@ class BorderCheckWebserver():
     def __init__(self, ref, *args):
         HttpHandler.ref = ref
         httpd = HTTPServer(('', port), HttpHandler)
-        print "http://127.0.0.1:%d/ : Serving directory '%s/www'" % (port, os.getcwd())
+        print "http://127.0.0.1:%d/ : Serving directory '%s/web'" % (port, os.getcwd())
         webbrowser.open('http://127.0.0.1:8080', new=1)
         try:
             httpd.serve_forever()
@@ -125,9 +125,9 @@ class BorderCheckWebserver():
             print 'Server killed on user request (keyboard interrupt).'
 
 if __name__=="__main__":
-    wwwroot = "www"
+    wwwroot = "web"
     httpd = HTTPServer(('', port), HttpHandler)
-    print "http://127.0.0.1:%d/ : Serving directory '%s/www'" % (port, os.getcwd())
+    print "http://127.0.0.1:%d/ : Serving directory '%s/web'" % (port, os.getcwd())
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

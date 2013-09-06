@@ -62,13 +62,10 @@ class bc(object):
         try:
             return func(*args)
         except Exception as e:
-            if options.url:
-                print("[Error] - Something wrong fetching urls. Aborting..."), "\n"
+            print("[Error] - Something wrong fetching urls. Aborting..."), "\n"
+            if DEBUG:
+                traceback.print_exc()
                 sys.exit(2)
-            else:
-                print(error, "error")
-                if DEBUG:
-                    traceback.print_exc()
 
     def check_browser(self):
         """
@@ -90,15 +87,15 @@ class bc(object):
                             pass
                         latest_subdir = max(all_subdirs, key=os.path.getmtime)
                         osx_profile = os.path.join(f_osx, latest_subdir)
-                        osx_history_path = os.path.join(osx_profile, 'places.sqlite')
-                        self.browser_path = osx_history_path
+                        osx_self.browser_path = os.path.join(osx_profile, 'places.sqlite')
+                        self.browser_path = osx_self.browser_path
                     else:
                         for folder in os.listdir(f_osx):
                             if folder.endswith('.default'):
                                 osx_default = os.path.join(f_osx, folder)
-                                osx_history_path = os.path.join(osx_default, 'places.sqlite')
-                                print "Setting:", osx_history_path, "as history file"
-                                self.browser_path = osx_history_path
+                                osx_self.browser_path = os.path.join(osx_default, 'places.sqlite')
+                                print "Setting:", osx_self.browser_path, "as history file"
+                                self.browser_path = osx_self.browser_path
                     self.browser = "F"
                 elif os.path.exists(c_osx):
                     self.browser = "C"
@@ -118,9 +115,8 @@ class bc(object):
                 for folder in os.listdir(f_lin):
                     if folder.endswith('.default'):
                         lin_default = os.path.join(f_lin, folder)
-                        lin_history_path = os.path.join(lin_default, 'places.sqlite')
+                        self.browser_path = os.path.join(lin_default, 'places.sqlite')
                         self.browser = "F"
-                        self.browser_path = lin_history_path
             elif os.path.exists(c_lin):
                 self.browser = "C"
                 self.browser_path = c_lin
@@ -133,13 +129,23 @@ class bc(object):
         Set urls to visit
         """
         print "Browser database:", self.browser_path, "\n"
-        conn = sqlite3.connect(self.browser_path)
-        c = conn.cursor()
-
         if self.browser == "F": #Firefox history database
+            conn = sqlite3.connect(self.browser_path)
+            c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
-        elif self.browser == "C": #Chrome history database
-            c.execute('select urls.url, urls.title, urls.visit_count, urls.typed_count, urls.last_visit_time, urls.hidden, visits.visit_time, visits.from_visit, visits.transition from urls, visits where urls.id = visits.url')
+        elif self.browser == "C" or self.browser == "CHROMIUM": #Chrome/Chromium history database
+            import filecmp
+            a = self.browser_path + 'Copy'
+            if os.path.exists(a):
+                if filecmp.cmp(self.browser_path, a) == False:
+                    os.system('rm ' + a)
+                    os.system('cp "' + self.browser_path + '" "' + a + '"')
+                else:
+                    os.system('cp "' + self.browser_path + '" "' + a + '"')
+                conn = sqlite3.connect(a)
+                c = conn.cursor()
+                c.execute('select urls.url, urls.last_visit_time FROM urls ORDER BY urls.last_visit_time DESC')
+                os.system('rm "' + a + '"')
         else: # Browser not allowed
             print "\nSorry, you haven't a compatible browser\n\n"
             exit(2)
