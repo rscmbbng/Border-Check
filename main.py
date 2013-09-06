@@ -75,6 +75,7 @@ class bc(object):
             f_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
             c_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
             chromium_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
+            s_osx = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
             try:
                 if os.path.exists(f_osx):
                     if len(os.listdir(f_osx)) > 2:
@@ -87,15 +88,13 @@ class bc(object):
                             pass
                         latest_subdir = max(all_subdirs, key=os.path.getmtime)
                         osx_profile = os.path.join(f_osx, latest_subdir)
-                        osx_self.browser_path = os.path.join(osx_profile, 'places.sqlite')
-                        self.browser_path = osx_self.browser_path
+                        self.browser_path = os.path.join(osx_profile, 'places.sqlite')
                     else:
                         for folder in os.listdir(f_osx):
                             if folder.endswith('.default'):
                                 osx_default = os.path.join(f_osx, folder)
-                                osx_self.browser_path = os.path.join(osx_default, 'places.sqlite')
-                                print "Setting:", osx_self.browser_path, "as history file"
-                                self.browser_path = osx_self.browser_path
+                                self.browser_path = os.path.join(osx_default, 'places.sqlite')
+                                print "Setting:", self.browser_path, "as history file"
                     self.browser = "F"
                 elif os.path.exists(c_osx):
                     self.browser = "C"
@@ -103,8 +102,11 @@ class bc(object):
                 elif os.path.exists(chromium_osx):
                     self.browser = "CHROMIUM"
                     self.browser_path = chromium_osx
+                elif os.path.exists(s_osx):
+                    self.browser = "S"
+                    self.browser_path = s_osx
             except:
-                print "Warning: No Firefox, Chrome or Chromium installed."
+                print "Warning: None of the currently supported browsers (Firefox, Chrome, Chromium, Safari) are installed."
 
         elif sys.platform.startswith('linux'):
             f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
@@ -133,26 +135,44 @@ class bc(object):
             conn = sqlite3.connect(self.browser_path)
             c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
+            url = c.fetchone()
+
+
         elif self.browser == "C" or self.browser == "CHROMIUM": #Chrome/Chromium history database
+            #Hack that makes a copy of the locked database to access it while Chrome is running.
+            #Removes the copied database afterwards
             import filecmp
             a = self.browser_path + 'Copy'
             if os.path.exists(a):
                 if filecmp.cmp(self.browser_path, a) == False:
-                    os.system('rm ' + a)
+                    os.system('rm "' + a+'"')
                     os.system('cp "' + self.browser_path + '" "' + a + '"')
-                else:
-                    os.system('cp "' + self.browser_path + '" "' + a + '"')
-                conn = sqlite3.connect(a)
-                c = conn.cursor()
-                c.execute('select urls.url, urls.last_visit_time FROM urls ORDER BY urls.last_visit_time DESC')
-                os.system('rm "' + a + '"')
+            else:
+                os.system('cp "' + self.browser_path + '" "' + a + '"')
+    
+            conn = sqlite3.connect(a)
+            c = conn.cursor()
+            c.execute('select urls.url, urls.last_visit_time FROM urls ORDER BY urls.last_visit_time DESC')
+            url = c.fetchone()
+            os.system('rm "' + a + '"')
+
+        elif self.browser == "S": #Safari history database
+            try:
+                from biplist import *
+            except:
+                print "\nError importing: biplist lib. \n\nTo run BC with Safari you need the biplist Python Library:\n\n $ pip install biplist\n"
+
+            plist = readPlist(self.browser_path)
+            url = [plist['WebHistoryDates'][0][''], '']
+
         else: # Browser not allowed
             print "\nSorry, you haven't a compatible browser\n\n"
             exit(2)
-        url = c.fetchone()
+        
         self.url = url
         print "Fetching URL:", self.url[0], "\n"
         return url[0]
+
 
     def traces(self):
         while True:
@@ -196,30 +216,29 @@ class bc(object):
         Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
         """
         # Download and extract database
-        import urllib
-        geo_db_path = "geo/"
-        if not os.path.exists(os.path.dirname(geo_db_path)):
-            os.makedirs(os.path.dirname(geo_db_path))
-        try:
-            print "Downloading GeoIP database...\n"
-            urllib.urlretrieve('http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
-                                geo_db_path+'GeoLiteCity.gz')
-        except:
+        if not os.path.exists('GeoLiteCity.dat'):
+            import urllib, gzip
+            geo_db_path = '/'
             try:
-                urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
-                                    geo_db_path+'GeoLiteCity.gz')
+                print "Downloading GeoIP database...\n"
+                urllib.urlretrieve('http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
+                                   'GeoLiteCity.gz')
             except:
-                print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
-                sys.exit(2)
-        else:
-            f_in = gzip.open(geo_db_path+'GeoLiteCity.gz', 'rb')
-            f_out = open(geo_db_path, 'wb')
+                try:
+                    urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
+                                        'GeoLiteCity.gz')
+                except:
+                    print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
+                    sys.exit(2)
+            f_in = gzip.open('GeoLiteCity.gz', 'rb')
+            f_out = open('GeoLiteCity.dat', 'wb')
             f_out.write(f_in.read())
             f_in.close()
-            os.remove(geo_db_path+'GeoIPdb.gz')
+
+            os.remove('GeoLiteCity.gz')
 
         # Set database (GeoLiteCity)
-        geoip= pygeoip.GeoIP(geo_db_path + 'GeoLiteCity.dat')
+        geoip= pygeoip.GeoIP('GeoLiteCity.dat')
 
     def run(self, opts=None):
         """
