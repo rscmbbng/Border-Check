@@ -94,7 +94,7 @@ class bc(object):
                             if folder.endswith('.default'):
                                 osx_default = os.path.join(f_osx, folder)
                                 self.browser_path = os.path.join(osx_default, 'places.sqlite')
-                                print "Setting:", self.browser_path, "as history file"
+                                #print "Setting:", self.browser_path, "as history file"
                     self.browser = "F"
                 elif os.path.exists(c_osx):
                     self.browser = "C"
@@ -126,11 +126,14 @@ class bc(object):
                 self.browser = "CHROMIUM"
                 self.browser_path = chromium_lin
 
+        print "Current browser:", self.browser, "\n"
+        print "Browser database:", self.browser_path, "\n"
+
     def getURL(self):
         """
         Set urls to visit
         """
-        print "Browser database:", self.browser_path, "\n"
+
         if self.browser == "F": #Firefox history database
             conn = sqlite3.connect(self.browser_path)
             c = conn.cursor()
@@ -170,19 +173,21 @@ class bc(object):
             exit(2)
         
         self.url = url
-        print "Fetching URL:", self.url[0], "\n"
         return url[0]
 
 
     def traces(self):
         while True:
-            url = urlparse(self.url[0]).netloc
+            print "Fetching URL:", self.url[0], "\n"
+            #url = urlparse(self.url[0]).netloc 
+            url = urlparse(self.getURL()).netloc #changed this for prototyping
             url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
             url_ip = socket.gethostbyname(url)
+            print url
             if url != self.old_url:
                 count = 0
-                a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
-                #a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
+                #a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
+                a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
                 logfile = open('logfile', 'a')
 
                 for line in a.stdout:
@@ -190,7 +195,7 @@ class bc(object):
                     parts = line.split()
                     for ip in parts:
                         if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
-                            record = geoip.record_by_addr(ip)
+                            record = self.geoip.record_by_addr(ip)
                             #print record
                             try:
                                 if record.has_key('country_name') and record['city'] is not '':
@@ -215,7 +220,7 @@ class bc(object):
         """
         Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
         """
-        # Download and extract database
+        # Download, extract and set geoipdatabase
         if not os.path.exists('GeoLiteCity.dat'):
             import urllib, gzip
             geo_db_path = '/'
@@ -238,7 +243,7 @@ class bc(object):
             os.remove('GeoLiteCity.gz')
 
         # Set database (GeoLiteCity)
-        geoip= pygeoip.GeoIP('GeoLiteCity.dat')
+        self.geoip= pygeoip.GeoIP('GeoLiteCity.dat')
 
     def run(self, opts=None):
         """
