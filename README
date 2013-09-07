@@ -4,7 +4,9 @@ As one surfs the net, data packets are sent from the user's computer to the targ
 
 In realtime BC lets you know which countries you surf through as you browse the web. Additionally BC will illustrate this process on a world map and (where available) provide you with contextualizing information on that country's laws and practices regarding your data.
 
-for OSX and Linux
+Currently supporting the following browsers on OSX and Unix systems:
+Firefox, Chromium, Chrome, Safari
+
 v.01 
 
 GPLv3 - 2013
