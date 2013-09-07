@@ -17,7 +17,7 @@ except:
     print "\nError importing: sqlite3 lib. \n\nOn Debian based systems, please try like root:\n\n $ apt-get install sqlite3\n"
     sys.exit(2)
 
-import subprocess, socket
+import subprocess, socket, thread
 from options import BCOptions
 from webserver import BorderCheckWebserver
 
@@ -185,12 +185,12 @@ class bc(object):
         # Set database (GeoLiteCity)
         self.geoip= pygeoip.GeoIP('GeoLiteCity.dat')
 
-        print "Fetching URL:", self.url[0], "\n"
+        print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
+        print "URL:", self.url[0], "\n"
         #url = urlparse(self.url[0]).netloc 
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
-        print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
         print "Host:", url, "\n"
         if url != self.old_url:
             count = 1
@@ -250,6 +250,7 @@ class bc(object):
         """
         Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
         """
+        print "="*45 + "\n", "GeoIP Options:\n" + '='*45 + "\n"
         # Download, extract and set geoipdatabase
         if not os.path.exists('GeoLiteCity.dat'):
             import urllib, gzip
@@ -271,6 +272,7 @@ class bc(object):
             f_in.close()
 
             os.remove('GeoLiteCity.gz')
+        print "Database: GeoLiteCity\n"
 
     def run(self, opts=None):
         """
@@ -294,8 +296,12 @@ class bc(object):
         url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
         # set geoip database
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
-        # start web mode
-        BorderCheckWebserver(self) #child process or another thread
+        # start web mode (on a different thread)
+        try: 
+            thread.start_new_thread(BorderCheckWebserver(self))
+        except:
+            print "Error: unable to start thread"
+            pass
         # run traceroutes
         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
 
