@@ -34,6 +34,7 @@ class bc(object):
         """
         self.browser = "" # "F" Firefox / "C" Chrome
         self.browser_path = ""
+        self.browser_version = ""
         self.url = ""
         self.old_url = ""
 
@@ -132,10 +133,24 @@ class bc(object):
             elif os.path.exists(chromium_lin):
                 self.browser = "CHROMIUM"
                 self.browser_path = chromium_lin
+
         print "Browser Options:\n" + '='*45 + "\n"
-        print "On use:", self.browser, "\n"
-        print "Version:", "\n"
-        print "History path:", self.browser_path, "\n"
+        if self.browser == "F":
+            print "Browser used: Firefox \n"
+            self.browser_path = subprocess.check_output(['/Applications/Firefox.app/Contents/MacOS/firefox', '--version']).strip('\n')
+        elif self.browser == "C":
+            print "Browser used: Chrome \n"
+            self.browser_version = subprocess.check_output(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--version']).strip('\n')
+        elif self.browser == "CHROMIUM":
+            print "Browser used: Chromium \n"
+            self.browser_version = subprocess.check_output(['/Applications/Chromium.app/Contents/MacOS/Chromium', '--version']).strip('\n')
+        elif self.browser == "S":
+            print "Browser used: Safari \n"
+        if options.debug == True:
+            print "Version:", self.browser_version, "\n"
+            print "History:", self.browser_path, "\n"
+
+        #move the subprocesses to debug mode
 
     def getURL(self):
         """
