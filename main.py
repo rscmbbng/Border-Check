@@ -67,6 +67,13 @@ class bc(object):
                 traceback.print_exc()
                 sys.exit(2)
 
+    def check_root(self):
+        """     
+        Check root permissions
+        """
+        if not os.geteuid()==0:
+            sys.exit("\nOnly root can run this script...\n")
+
     def check_browser(self):
         """
         Check browsers used by system
@@ -125,21 +132,20 @@ class bc(object):
             elif os.path.exists(chromium_lin):
                 self.browser = "CHROMIUM"
                 self.browser_path = chromium_lin
-
-        print "Current browser:", self.browser, "\n"
-        print "Browser database:", self.browser_path, "\n"
+        print "Browser Options:\n" + '='*45 + "\n"
+        print "On use:", self.browser, "\n"
+        print "Version:", "\n"
+        print "History path:", self.browser_path, "\n"
 
     def getURL(self):
         """
         Set urls to visit
         """
-
         if self.browser == "F": #Firefox history database
             conn = sqlite3.connect(self.browser_path)
             c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
             url = c.fetchone()
-
 
         elif self.browser == "C" or self.browser == "CHROMIUM": #Chrome/Chromium history database
             #Hack that makes a copy of the locked database to access it while Chrome is running.
@@ -161,7 +167,7 @@ class bc(object):
 
         elif self.browser == "S": #Safari history database
             try:
-                from biplist import *
+                from biplist import readPlist
             except:
                 print "\nError importing: biplist lib. \n\nTo run BC with Safari you need the biplist Python Library:\n\n $ pip install biplist\n"
 
@@ -175,46 +181,70 @@ class bc(object):
         self.url = url
         return url[0]
 
-
     def traces(self):
-        while True:
-            print "Fetching URL:", self.url[0], "\n"
-            #url = urlparse(self.url[0]).netloc 
-            url = urlparse(self.getURL()).netloc #changed this for prototyping
-            url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
-            url_ip = socket.gethostbyname(url)
-            print url
-            if url != self.old_url:
-                count = 0
-                #a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE) # -> using tcp
-                a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE) # -> using udp
-                logfile = open('logfile', 'a')
+        # Set database (GeoLiteCity)
+        self.geoip= pygeoip.GeoIP('GeoLiteCity.dat')
 
-                for line in a.stdout:
-                    logfile.write(line)
-                    parts = line.split()
-                    for ip in parts:
-                        if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
-                            record = self.geoip.record_by_addr(ip)
-                            #print record
-                            try:
-                                if record.has_key('country_name') and record['city'] is not '':
-                                    country = record['country_name']
-                                    city = record['city']
-                                    print count, "While surfing you got to "+ip+" which is in "+city+", "+country
-                                elif record.has_key('country_name'):
-                                    country = record['country_name']    
-                                    print count, "While surfing you got to "+ip+" which is in "+country
-                                    time.sleep(0.3)
-                                    count+=1
-                            except:
-                                print "Not more records. Aborting...", "\n"
-                                exit()
-
-            self.old_url = url
-            print "old url = ", self.old_url
+        print "Fetching URL:", self.url[0], "\n"
+        #url = urlparse(self.url[0]).netloc 
+        url = urlparse(self.getURL()).netloc #changed this for prototyping
+        url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
+        url_ip = socket.gethostbyname(url)
+        print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
+        print "Host:", url, "\n"
+        if url != self.old_url:
+            count = 1
+            if sys.platform.startswith('linux'):
+                # using udp
+                try:
+                    print "Method: udp\n"
+                    a = subprocess.Popen(['lft', '-S', '-n', url_ip], stdout=subprocess.PIPE)
+                # using tcp
+                except:
+                    try:
+                        print "Method: tcp\n"
+                        a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE)
+                    except:
+                        print "Error: network is not responding correctly. Aborting...\n"
+                        sys.exit(2)
+            else:
+                # using udp     
+                try:            
+                    print "Method: udp\n"
+                    a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE)
+                # using tcp
+                except:     
+                    try:    
+                        print "Method: tcp\n"
+                        a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE)
+                    except: 
+                        print "Error: network is not responding correctly. Aborting...\n"
+                        sys.exit(2)
+            logfile = open('logfile', 'a')
+            print '='*45 + "\n" + "Packages Route:\n" + '='*45
+            for line in a.stdout:
+                logfile.write(line)
+                parts = line.split()
+                for ip in parts:
+                    if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
+                        record = self.geoip.record_by_addr(ip)
+                        #print record
+                        try:
+                            if record.has_key('country_name') and record['city'] is not '':
+                                country = record['country_name']
+                                city = record['city']
+                                print "Trace:", count, "->", ip, "->", city, "->", country
+                                count+=1
+                            elif record.has_key('country_name'):
+                                country = record['country_name']
+                                print "Trace:", count, "->", ip, "->", country
+                                count+=1
+                        except:
+                            print "Trace:", count, "->", "Not allowed"
+                            count+=1
             logfile.close()
-            time.sleep(5)
+            print '='*45 + "\n"
+            print "Status: Waiting for new urls ...\n"
 
     def getGEO(self):
         """
@@ -242,9 +272,6 @@ class bc(object):
 
             os.remove('GeoLiteCity.gz')
 
-        # Set database (GeoLiteCity)
-        self.geoip= pygeoip.GeoIP('GeoLiteCity.dat')
-
     def run(self, opts=None):
         """
         Run BorderCheck
@@ -259,16 +286,18 @@ class bc(object):
         print('='*75)
         print(str(p.version))
         print('='*75)
+        # root checker
+        root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
         # extract browser type and path
         browser = self.try_running(self.check_browser, "\nInternal error checking browser files path.")
         # extract url
         url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
         # set geoip database
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
-        # run traceroutes
-        traces = self.try_running(self.traces, "\nInternal error tracerouting.")
         # start web mode
         BorderCheckWebserver(self) #child process or another thread
+        # run traceroutes
+        traces = self.try_running(self.traces, "\nInternal error tracerouting.")
 
 if __name__ == "__main__":
     app = bc()

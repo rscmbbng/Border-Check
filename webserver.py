@@ -117,8 +117,13 @@ class BorderCheckWebserver():
     def __init__(self, ref, *args):
         HttpHandler.ref = ref
         httpd = HTTPServer(('', port), HttpHandler)
-        print "http://127.0.0.1:%d/ : Serving directory '%s/web'" % (port, os.getcwd())
-        webbrowser.open('http://127.0.0.1:8080', new=1)
+        print '='*45 + "\n", "Data Visualization:\n" + '='*45 + "\n"
+        print "Mode: Webserver\n"
+        print "Host: http://127.0.0.1:%d/\n\nPath: '%s/web'" % (port, os.getcwd()), "\n"
+        try:
+            webbrowser.open('http://127.0.0.1:8080', new=1)
+        except:
+            print "Error: Browser is not responding correctly.\n"
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
