@@ -347,7 +347,7 @@ class bc(object):
             pass
         # open same browser of history access on a new tab
         try:
-            webbrowser.get(self.browser_path).open('http://127.0.0.1:8080', new=1)
+            webbrowser.open('http://127.0.0.1:8080', new=1)
         except:
             print "Error: Browser is not responding correctly.\n"
         # run traceroutes
