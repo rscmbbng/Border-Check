@@ -279,7 +279,7 @@ class bc(object):
                             print "Trace:", count, "->", "Not allowed"
                             count+=1
             logfile.close()
-	    self.old_url = url
+            self.old_url = url
 
     def getGEO(self):
         """
@@ -342,13 +342,14 @@ class bc(object):
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
             t.start()
             time.sleep(2)
-            try:
-                webbrowser.get(self.browser_path).open('http://127.0.0.1:8080', new=1)
-            except:
-                print "Error: Browser is not responding correctly.\n"
         except:
             print "Error: unable to start thread"
             pass
+        # open same browser of history access on a new tab
+        try:
+            webbrowser.get(self.browser_path).open('http://127.0.0.1:8080', new=1)
+        except:
+            print "Error: Browser is not responding correctly.\n"
         # run traceroutes
         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
         print '='*45 + "\n"
