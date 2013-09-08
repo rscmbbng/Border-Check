@@ -20,6 +20,7 @@ except:
 import subprocess, socket, threading
 from options import BCOptions
 from webserver import BorderCheckWebserver
+import webbrowser
 
 # set to emit debug messages about errors (0 = off).
 DEBUG = 1
@@ -341,6 +342,10 @@ class bc(object):
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
             t.start()
             time.sleep(2)
+            try:
+                webbrowser.get(self.browser_path).open('http://127.0.0.1:8080', new=1)
+            except:
+                print "Error: Browser is not responding correctly.\n"
         except:
             print "Error: unable to start thread"
             pass
