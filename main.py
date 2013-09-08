@@ -224,6 +224,7 @@ class bc(object):
 
         print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
+
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
@@ -351,7 +352,10 @@ class bc(object):
         except:
             print "Error: Browser is not responding correctly.\n"
         # run traceroutes
-        traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+        if self.url[0] == 'http://127.0.0.1:8080/':
+            pass
+        else:
+            traces = self.try_running(self.traces, "\nInternal error tracerouting.")
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
         # stay latent waiting for new urls
@@ -359,7 +363,10 @@ class bc(object):
             url = urlparse(self.getURL()).netloc
             url = url.replace('www.','')
             if url != self.old_url:
-                traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+                if self.url[0] == 'http://127.0.0.1:8080/':
+                    pass
+                else:
+                    traces = self.try_running(self.traces, "\nInternal error tracerouting.")
 
 if __name__ == "__main__":
     app = bc()
