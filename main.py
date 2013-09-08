@@ -17,7 +17,7 @@ except:
     print "\nError importing: sqlite3 lib. \n\nOn Debian based systems, please try like root:\n\n $ apt-get install sqlite3\n"
     sys.exit(2)
 
-import subprocess, socket, thread
+import subprocess, socket, threading
 from options import BCOptions
 from webserver import BorderCheckWebserver
 
@@ -337,7 +337,8 @@ class bc(object):
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
         # start web mode (on a different thread)
         try: 
-            thread.start_new_thread(BorderCheckWebserver(self))
+            t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
+            t.start()
         except:
             print "Error: unable to start thread"
             pass
