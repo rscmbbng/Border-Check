@@ -12,7 +12,6 @@ from runpy import run_module
 from urlparse import urlparse
 from cgi import parse_qs #, parse_header, parse_multipart
 import cgi
-import webbrowser
 
 port = 8080
 wwwroot = "web/"
@@ -120,10 +119,6 @@ class BorderCheckWebserver():
         print '='*45 + "\n", "Data Visualization:\n" + '='*45 + "\n"
         print "Mode: Webserver\n"
         print "Host: http://127.0.0.1:%d/\n\nPath: '%s/web'" % (port, os.getcwd()), "\n"
-        try:
-            webbrowser.open('http://127.0.0.1:8080', new=1)
-        except:
-            print "Error: Browser is not responding correctly.\n"
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
