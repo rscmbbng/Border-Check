@@ -137,16 +137,23 @@ class bc(object):
         print "Browser Options:\n" + '='*45 + "\n"
         if self.browser == "F":
             print "Browser used: Firefox \n"
-            self.browser_path = subprocess.check_output(['/Applications/Firefox.app/Contents/MacOS/firefox', '--version']).strip('\n')
         elif self.browser == "C":
             print "Browser used: Chrome \n"
-            self.browser_version = subprocess.check_output(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--version']).strip('\n')
         elif self.browser == "CHROMIUM":
             print "Browser used: Chromium \n"
-            self.browser_version = subprocess.check_output(['/Applications/Chromium.app/Contents/MacOS/Chromium', '--version']).strip('\n')
         elif self.browser == "S":
             print "Browser used: Safari \n"
-        if options.debug == True:
+
+        if self.options.debug == True:
+            if self.browser == "F" and sys.platform == 'darwin':
+                self.browser_version = subprocess.check_output(['/Applications/Firefox.app/Contents/MacOS/firefox', '--version']).strip('\n')
+            elif self.browser == "F" and sys.platform.startswith('linux'):
+                self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
+            elif self.browser == "C" and sys.platform == 'darwin'::
+                self.browser_version = subprocess.check_output(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--version']).strip('\n')
+            elif self.browser == "CHROMIUM" and sys.platform == 'darwin'::
+                self.browser_version = subprocess.check_output(['/Applications/Chromium.app/Contents/MacOS/Chromium', '--version']).strip('\n')
+
             print "Version:", self.browser_version, "\n"
             print "History:", self.browser_path, "\n"
 
@@ -190,7 +197,7 @@ class bc(object):
             url = [plist['WebHistoryDates'][0][''], '']
 
         else: # Browser not allowed
-            print "\nSorry, you haven't a compatible browser\n\n"
+            print "\nSorry, don't have a compatible browser\n\n"
             exit(2)
         
         self.url = url
