@@ -34,6 +34,7 @@ class bc(object):
         """
         self.browser = "" # "F" Firefox / "C" Chrome
         self.browser_path = ""
+        self.browser_history_path = ""
         self.browser_version = ""
         self.url = ""
         self.old_url = ""
@@ -80,38 +81,48 @@ class bc(object):
         Check browsers used by system
         """
         if sys.platform == 'darwin':
-            f_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
-            c_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
-            chromium_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
-            s_osx = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
+            # paths to the browsing history db's 
+            f_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
+            c_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
+            chromium_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
+            s_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
+            # path to the browser executables
+            f_osx = '/Applications/Firefox.app/Contents/MacOS/firefox' 
+            c_osx = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+            chromium_osx = '/Applications/Chromium.app/Contents/MacOS/Chromium'
+            s_osx = '/Applications/Safari.app/Contents/MacOS/Safari'
             try:
-                if os.path.exists(f_osx):
-                    if len(os.listdir(f_osx)) > 2:
+                if os.path.exists(f_his_osx):
+                    if len(os.listdir(f_his_osx)) > 2:
                         print 'You have multiple profiles, choosing the last one used'
                         #filtering the directory that was last modified
-                        all_subdirs = [os.path.join(f_osx,d)for d in os.listdir(f_osx)]
+                        all_subdirs = [os.path.join(f_his_osx,d)for d in os.listdir(f_his_osx)]
                         try:
-                            all_subdirs.remove(os.path.join(f_osx,'.DS_Store')) #throwing out .DS_store
+                            all_subdirs.remove(os.path.join(f_his_osx,'.DS_Store')) #throwing out .DS_store
                         except:
                             pass
                         latest_subdir = max(all_subdirs, key=os.path.getmtime)
-                        osx_profile = os.path.join(f_osx, latest_subdir)
-                        self.browser_path = os.path.join(osx_profile, 'places.sqlite')
+                        osx_profile = os.path.join(f_his_osx, latest_subdir)
+                        self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
                     else:
-                        for folder in os.listdir(f_osx):
+                        for folder in os.listdir(f_his_osx):
                             if folder.endswith('.default'):
-                                osx_default = os.path.join(f_osx, folder)
-                                self.browser_path = os.path.join(osx_default, 'places.sqlite')
-                                #print "Setting:", self.browser_path, "as history file"
+                                osx_default = os.path.join(f_his_osx, folder)
+                                self.browser_history_path = os.path.join(osx_default, 'places.sqlite')
+                                #print "Setting:", self.browser_history_path, "as history file"
                     self.browser = "F"
-                elif os.path.exists(c_osx):
+                    self.browser_path = f_osx
+                elif os.path.exists(c_his_osx):
                     self.browser = "C"
+                    self.browser_history_path = c_his_osx
                     self.browser_path = c_osx
-                elif os.path.exists(chromium_osx):
+                elif os.path.exists(chromium_his_osx):
                     self.browser = "CHROMIUM"
+                    self.browser_history_path = chromium_his_osx
                     self.browser_path = chromium_osx
-                elif os.path.exists(s_osx):
+                elif os.path.exists(s_his_osx):
                     self.browser = "S"
+                    self.browser_history_path = s_his_osx
                     self.browser_path = s_osx
             except:
                 print "Warning: None of the currently supported browsers (Firefox, Chrome, Chromium, Safari) are installed."
@@ -125,14 +136,14 @@ class bc(object):
                 for folder in os.listdir(f_lin):
                     if folder.endswith('.default'):
                         lin_default = os.path.join(f_lin, folder)
-                        self.browser_path = os.path.join(lin_default, 'places.sqlite')
+                        self.browser_history_path = os.path.join(lin_default, 'places.sqlite')
                         self.browser = "F"
             elif os.path.exists(c_lin):
                 self.browser = "C"
-                self.browser_path = c_lin
+                self.browser_history_path = c_lin
             elif os.path.exists(chromium_lin):
                 self.browser = "CHROMIUM"
-                self.browser_path = chromium_lin
+                self.browser_history_path = chromium_lin
 
         print "Browser Options:\n" + '='*45 + "\n"
         if self.browser == "F":
@@ -146,16 +157,16 @@ class bc(object):
 
         if self.options.debug == True:
             if self.browser == "F" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output(['/Applications/Firefox.app/Contents/MacOS/firefox', '--version']).strip('\n')
+                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
             elif self.browser == "F" and sys.platform.startswith('linux'):
                 self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
-            elif self.browser == "C" and sys.platform == 'darwin'::
-                self.browser_version = subprocess.check_output(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '--version']).strip('\n')
-            elif self.browser == "CHROMIUM" and sys.platform == 'darwin'::
-                self.browser_version = subprocess.check_output(['/Applications/Chromium.app/Contents/MacOS/Chromium', '--version']).strip('\n')
+            elif self.browser == "C" and sys.platform == 'darwin':
+                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+            elif self.browser == "CHROMIUM" and sys.platform == 'darwin':
+                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
 
             print "Version:", self.browser_version, "\n"
-            print "History:", self.browser_path, "\n"
+            print "History:", self.browser_history_path, "\n"
 
         #move the subprocesses to debug mode
 
@@ -164,7 +175,7 @@ class bc(object):
         Set urls to visit
         """
         if self.browser == "F": #Firefox history database
-            conn = sqlite3.connect(self.browser_path)
+            conn = sqlite3.connect(self.browser_history_path)
             c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
             url = c.fetchone()
@@ -173,13 +184,13 @@ class bc(object):
             #Hack that makes a copy of the locked database to access it while Chrome is running.
             #Removes the copied database afterwards
             import filecmp
-            a = self.browser_path + 'Copy'
+            a = self.browser_history_path + 'Copy'
             if os.path.exists(a):
-                if filecmp.cmp(self.browser_path, a) == False:
+                if filecmp.cmp(self.browser_history_path, a) == False:
                     os.system('rm "' + a+'"')
-                    os.system('cp "' + self.browser_path + '" "' + a + '"')
+                    os.system('cp "' + self.browser_history_path + '" "' + a + '"')
             else:
-                os.system('cp "' + self.browser_path + '" "' + a + '"')
+                os.system('cp "' + self.browser_history_path + '" "' + a + '"')
     
             conn = sqlite3.connect(a)
             c = conn.cursor()
@@ -193,7 +204,7 @@ class bc(object):
             except:
                 print "\nError importing: biplist lib. \n\nTo run BC with Safari you need the biplist Python Library:\n\n $ pip install biplist\n"
 
-            plist = readPlist(self.browser_path)
+            plist = readPlist(self.browser_history_path)
             url = [plist['WebHistoryDates'][0][''], '']
 
         else: # Browser not allowed
@@ -272,6 +283,8 @@ class bc(object):
         """
         Get Geolocation database (http://dev.maxmind.com/geoip/legacy/geolite/)
         """
+        maxmind = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
+        geo_db_mirror1 = 'http://xsser.sf.net/map/GeoLiteCity.dat.gz'
         print "="*45 + "\n", "GeoIP Options:\n" + '='*45 + "\n"
         # Download, extract and set geoipdatabase
         if not os.path.exists('GeoLiteCity.dat'):
@@ -279,11 +292,15 @@ class bc(object):
             geo_db_path = '/'
             try:
                 print "Downloading GeoIP database...\n"
-                urllib.urlretrieve('http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz',
+                if self.options.debug == True:
+                    print "Fetching from:", maxmind
+                urllib.urlretrieve(maxmind,
                                    'GeoLiteCity.gz')
             except:
                 try:
-                    urllib.urlretrieve('http://xsser.sf.net/map/GeoLiteCity.dat.gz',
+                    if self.options.debug == True:
+                        print "Fetching from:", geo_db_mirror1 
+                    urllib.urlretrieve(geo_db_mirror1,
                                         'GeoLiteCity.gz')
                 except:
                     print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
