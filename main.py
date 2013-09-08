@@ -215,12 +215,14 @@ class bc(object):
         return url[0]
 
     def traces(self):
+        '''
+        Use LFT to traceroute objetives and pass data to webserver
+        '''
         # Set database (GeoLiteCity)
         self.geoip= pygeoip.GeoIP('GeoLiteCity.dat')
 
         print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
-        #url = urlparse(self.url[0]).netloc 
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
@@ -276,8 +278,7 @@ class bc(object):
                             print "Trace:", count, "->", "Not allowed"
                             count+=1
             logfile.close()
-            print '='*45 + "\n"
-            print "Status: Waiting for new urls ...\n"
+	    self.old_url = url
 
     def getGEO(self):
         """
@@ -336,14 +337,23 @@ class bc(object):
         # set geoip database
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
         # start web mode (on a different thread)
-        try: 
+        try:
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
             t.start()
+            time.sleep(2)
         except:
             print "Error: unable to start thread"
             pass
         # run traceroutes
         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+        print '='*45 + "\n"
+        print "Status: Waiting for new urls ...\n"
+        # stay latent waiting for new urls
+        while True:
+            url = urlparse(self.getURL()).netloc
+            url = url.replace('www.','')
+            if url != self.old_url:
+                traces = self.try_running(self.traces, "\nInternal error tracerouting.")
 
 if __name__ == "__main__":
     app = bc()
