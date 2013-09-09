@@ -69,7 +69,8 @@ class HttpHandler(BaseHTTPRequestHandler):
                 content = query.get('upfile')
         except:
             pass
-        print "Request from %s:%d"%self.client_address + "  " + uri
+        # only for debug mode
+        #print "Request from %s:%d"%self.client_address + "  " + uri
         if uri[-1] == '/' or os.path.isdir(file):
             file = file + "/index.py"
         if os.path.isfile(file + ".py"):

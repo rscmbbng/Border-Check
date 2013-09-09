@@ -20,6 +20,7 @@ except:
 import subprocess, socket, threading
 from options import BCOptions
 from webserver import BorderCheckWebserver
+from xml_exporter import xml_reporting
 import webbrowser
 
 # set to emit debug messages about errors (0 = off).
@@ -360,6 +361,9 @@ class bc(object):
             pass
         else:
             traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+        # export data to XML
+        xml_results = xml_reporting(self)
+        xml_results.print_xml_results('data.xml')
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
         # stay latent waiting for new urls
