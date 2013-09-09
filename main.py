@@ -352,7 +352,8 @@ class bc(object):
         except:
             print "Error: Browser is not responding correctly.\n"
         # run traceroutes
-        if self.url[0] == 'http://127.0.0.1:8080/':
+        match_ip = self.url[0].strip('http://').strip(':8080')
+        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
             pass
         else:
             traces = self.try_running(self.traces, "\nInternal error tracerouting.")
@@ -362,8 +363,9 @@ class bc(object):
         while True:
             url = urlparse(self.getURL()).netloc
             url = url.replace('www.','')
+            match_ip = url.strip('http://').strip(':8080')
             if url != self.old_url:
-                if self.url[0] == 'http://127.0.0.1:8080/':
+                if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
                     pass
                 else:
                     traces = self.try_running(self.traces, "\nInternal error tracerouting.")
