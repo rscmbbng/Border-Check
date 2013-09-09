@@ -249,12 +249,16 @@ class bc(object):
                 except:     
                     try:    
                         print "Method: tcp\n"
-                        a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE)
+                        a = subprocess.Popen(['lft', '-S', '-n', '-e', url_ip], stdout=subprocess.PIPE)
                     except: 
                         print "Error: network is not responding correctly. Aborting...\n"
                         sys.exit(2)
+            #Make a tracelog file.
             if self.options.debug == True:
-                logfile = open('logfile', 'a')
+                logfile = open('tracelogfile', 'a')
+                thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url[0], "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
+                for item in thingstolog:
+                    logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
                 if self.options.debug == True:
@@ -341,6 +345,7 @@ class bc(object):
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
             t.start()
             time.sleep(2)
+
         except:
             print "Error: unable to start thread"
             pass
