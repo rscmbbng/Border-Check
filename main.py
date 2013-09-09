@@ -40,6 +40,10 @@ class bc(object):
         self.browser_version = ""
         self.url = ""
         self.old_url = ""
+        self.ip = ""
+        self.city = ""
+        self.country = ""
+        self.routes = ""
 
     def set_options(self, options):
         """
@@ -223,6 +227,7 @@ class bc(object):
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
+        self.ip = url_ip
         print "Host:", url, "\n"
         if self.options.debug == True:
             print "Host ip:", url_ip, "\n"
@@ -275,10 +280,15 @@ class bc(object):
                                 city = record['city']
                                 print "Trace:", count, "->", ip, "->", city, "->", country
                                 count+=1
+                                self.city = city
+                                self.country = country
+                                self.routes = "Trace:", count, "->", ip, "->", city, "->", country
                             elif record.has_key('country_name'):
                                 country = record['country_name']
                                 print "Trace:", count, "->", ip, "->", country
                                 count+=1
+                                self.country = country
+                                self.routes = "Trace:", count, "->", ip, "->", country
                         except:
                             print "Trace:", count, "->", "Not allowed"
                             count+=1
