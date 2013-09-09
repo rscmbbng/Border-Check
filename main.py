@@ -152,20 +152,26 @@ class bc(object):
                 self.browser_history_path = chromium_lin
 
         print "Browser Options:\n" + '='*45 + "\n"
-        print "Currently used:", self.browser_path.split('/')[-1], "\n"
-
+        if self.browser == "F":
+            print "Browser used: Firefox \n"
+        elif self.browser == "C":
+            print "Browser used: Chrome \n"
+        elif self.browser == "CHROMIUM":
+            print "Browser used: Chromium \n"
+        elif self.browser == "S":
+            print "Browser used: Safari \n"
 
         if self.options.debug == True:
-            if sys.platform == 'darwin':
-                if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
-                    self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
-            elif sys.platform.startswith('linux') and self.browser == "F":
+            if self.browser == "F" and sys.platform == 'darwin':
+                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+            elif self.browser == "F" and sys.platform.startswith('linux'):
                 self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
+            elif self.browser == "C" and sys.platform == 'darwin':
+                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+            elif self.browser == "CHROMIUM" and sys.platform == 'darwin':
+                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
 
-            if self.browser == "S":
-                print "Can't get Safari version information, you'll have to look it up manually \n"
-            else:
-                print "Version:", self.browser_version, "\n"
+            print "Version:", self.browser_version, "\n"
             print "History:", self.browser_history_path, "\n"
 
         #move the subprocesses to debug mode
@@ -229,8 +235,6 @@ class bc(object):
         url_ip = socket.gethostbyname(url)
         self.ip = url_ip
         print "Host:", url, "\n"
-        if self.options.debug == True:
-            print "Host ip:", url_ip, "\n"
         if url != self.old_url:
             count = 1
             if sys.platform.startswith('linux'):
@@ -255,20 +259,14 @@ class bc(object):
                 except:     
                     try:    
                         print "Method: tcp\n"
-                        a = subprocess.Popen(['lft', '-S', '-n', '-e', url_ip], stdout=subprocess.PIPE)
+                        a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE)
                     except: 
                         print "Error: network is not responding correctly. Aborting...\n"
                         sys.exit(2)
-            #Make a tracelog file.
-            if self.options.debug == True:
-                logfile = open('tracelogfile', 'a')
-                thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url[0], "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
-                for item in thingstolog:
-                    logfile.write(item)
+            logfile = open('logfile', 'a')
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
-                if self.options.debug == True:
-                    logfile.write(line)
+                logfile.write(line)
                 parts = line.split()
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
@@ -286,9 +284,9 @@ class bc(object):
                             elif record.has_key('country_name'):
                                 country = record['country_name']
                                 print "Trace:", count, "->", ip, "->", country
-                                count+=1
                                 self.country = country
                                 self.routes = "Trace:", count, "->", ip, "->", country
+                                count+=1
                         except:
                             print "Trace:", count, "->", "Not allowed"
                             count+=1
@@ -356,7 +354,6 @@ class bc(object):
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
             t.start()
             time.sleep(2)
-
         except:
             print "Error: unable to start thread"
             pass
