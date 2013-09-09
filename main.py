@@ -147,26 +147,20 @@ class bc(object):
                 self.browser_history_path = chromium_lin
 
         print "Browser Options:\n" + '='*45 + "\n"
-        if self.browser == "F":
-            print "Browser used: Firefox \n"
-        elif self.browser == "C":
-            print "Browser used: Chrome \n"
-        elif self.browser == "CHROMIUM":
-            print "Browser used: Chromium \n"
-        elif self.browser == "S":
-            print "Browser used: Safari \n"
+        print "Currently used:", self.browser_path.split('/')[-1], "\n"
+
 
         if self.options.debug == True:
-            if self.browser == "F" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
-            elif self.browser == "F" and sys.platform.startswith('linux'):
+            if sys.platform == 'darwin':
+                if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
+                    self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+            elif sys.platform.startswith('linux') and self.browser == "F":
                 self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
-            elif self.browser == "C" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
-            elif self.browser == "CHROMIUM" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
 
-            print "Version:", self.browser_version, "\n"
+            if self.browser == "S":
+                print "Can't get Safari version information, you'll have to look it up manually \n"
+            else:
+                print "Version:", self.browser_version, "\n"
             print "History:", self.browser_history_path, "\n"
 
         #move the subprocesses to debug mode
@@ -229,6 +223,8 @@ class bc(object):
         url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
         print "Host:", url, "\n"
+        if self.options.debug == True:
+            print "Host ip:", url_ip, "\n"
         if url != self.old_url:
             count = 1
             if sys.platform.startswith('linux'):
@@ -257,10 +253,12 @@ class bc(object):
                     except: 
                         print "Error: network is not responding correctly. Aborting...\n"
                         sys.exit(2)
-            logfile = open('logfile', 'a')
+            if self.options.debug == True:
+                logfile = open('logfile', 'a')
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
-                logfile.write(line)
+                if self.options.debug == True:
+                    logfile.write(line)
                 parts = line.split()
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
