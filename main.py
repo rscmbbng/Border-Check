@@ -41,10 +41,12 @@ class bc(object):
         self.url = ""
         self.old_url = ""
         self.ip = ""
+        self.longitude =""
+        self.latitude = ""
         self.hop_host_name =""
         self.city = ""
         self.country = ""
-        self.routes = ""
+        self.server_name = "" 
 
     def set_options(self, options):
         """
@@ -219,7 +221,8 @@ class bc(object):
         Use LFT to traceroute objetives and pass data to webserver
         '''
         # Set database (GeoLiteCity)
-        self.geoip= pygeoip.GeoIP('GeoLiteCity.dat')
+        self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
+        self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
 
         print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
@@ -248,12 +251,12 @@ class bc(object):
                 # using udp     
                 try:            
                     print "Method: udp\n"
-                    a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE)
+                    a = subprocess.Popen(['lft', '-S', '-n', '-e', url_ip], stdout=subprocess.PIPE)
                 # using tcp
                 except:     
                     try:    
                         print "Method: tcp\n"
-                        a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE)
+                        a = subprocess.Popen(['lft', '-S', '-n', '-e', url_ip], stdout=subprocess.PIPE)
                     except: 
                         print "Error: network is not responding correctly. Aborting...\n"
                         sys.exit(2)
@@ -270,31 +273,46 @@ class bc(object):
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         record = self.geoip.record_by_addr(ip)
+                        try:
+                            asn = self.geoasn.org_by_addr(ip)
+                        except:
+                            asn = 'nothing'
+
                         #print record
                         try:
                            self.hop_host_name = socket.gethostbyaddr(ip)[0]
                         except:
                             self.hop_host_name = 'No hostname'
                         try:
+                            longitude = str(record['longitude'])
+                            self.longitude = longitude
+                            latitude = str(record['latitude'])
+                            self.latitude = latitude
+                        except:
+                            self.longitude = '-'
+                            self.latitude = '-'
+                        try:
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
                                 city = record['city']
 
-                                print "Trace:", count, "->", ip, "->", city, "->", country, "->", self.hop_host_name
+
+                                print "Trace:", count, "->", ip, "->", city, "->", country, "->", self.hop_host_name, asn
                                 count+=1
                                 self.city = city
                                 self.country = country
-                                self.routes = "Trace:", count, "->", ip, "->", city, "->", country
+                                self.server_name = self.hop_host_name
                             elif record.has_key('country_name'):
                                 country = record['country_name']
-                                print "Trace:", count, "->", ip, "->", country, "->", self.hop_host_name
+                                print "Trace:", count, "->", ip, "->", country, "->", self.hop_host_name, asn
                                 self.country = country
-                                self.routes = "Trace:", count, "->", ip, "->", country
+                                self.server_name = self.hop_host_name
                                 count+=1
                         except:
                             print "Trace:", count, "->", "Not allowed"
                             count+=1
-            logfile.close()
+            if self.options.debug == True:
+                logfile.close()
             self.old_url = url
 
     def getGEO(self):
@@ -329,7 +347,28 @@ class bc(object):
             f_in.close()
 
             os.remove('GeoLiteCity.gz')
-        print "Database: GeoLiteCity\n"
+
+        maxmind_asn = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz'
+        # Download, extract and set geoipdatabase
+        if not os.path.exists('GeoIPASNum.dat'):
+            import urllib, gzip
+            geo_db_path = '/'
+            try:
+                print "Downloading GeoIP ASN database...\n"
+                if self.options.debug == True:
+                    print "Fetching from:", maxmind_asn
+                urllib.urlretrieve(maxmind,
+                                   'GeoIPASNum.gz')
+            except:
+                print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
+                sys.exit(2)
+            f_in = gzip.open('GeoIPASNum.gz', 'rb')
+            f_out = open('GeoIPASNum.dat', 'wb')
+            f_out.write(f_in.read())
+            f_in.close()
+
+            os.remove('GeoIPASNum.gz')
+        print "Database: GeoIPASNum \n"
 
     def run(self, opts=None):
         """
@@ -369,12 +408,26 @@ class bc(object):
         # run traceroutes
         match_ip = self.url[0].strip('http://').strip(':8080')
         if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+            self.ip = 'localhost'
+            self.longitude = '-'
+            self.latitude = '-'  
+            self.city = '-'
+            self.country = '-'
+            self.server_name = '-'
             pass
         else:
+            self.ip = '' #this is overwritten
+            self.longitude = '-'
+            self.latitude = '-' 
+            self.city = '-'
+            self.country = 'waiting'
+            self.server_name = 'waiting'
+            xml_results = xml_reporting(self)
+            xml_results.print_xml_results('data.xml')
             traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-            #xml_results = xml_reporting(self)
-            #xml_results.print_xml_results('data.xml')
-            # export data to XML
+        # export data to XML    
+        xml_results = xml_reporting(self)
+        xml_results.print_xml_results('data.xml')
 
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
@@ -385,11 +438,25 @@ class bc(object):
             match_ip = url.strip('http://').strip(':8080')
             if url != self.old_url:
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+                    self.ip = 'localhost' 
+                    self.longitude = '-'
+                    self.latitude = '-'  
+                    self.city = '-'
+                    self.country = '-'
+                    self.server_name = '-' 
                     pass
                 else:
+                    self.ip = '' #this is overwritten
+                    self.longitude = '-'
+                    self.latitude = '-'
+                    self.city = '-'
+                    self.country = 'waiting'
+                    self.server_name = 'waiting'
+                    xml_results = xml_reporting(self)
+                    xml_results.print_xml_results('data.xml')
                     traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-                    #xml_results = xml_reporting(self)
-                    #xml_results.print_xml_results('data.xml')
+                xml_results = xml_reporting(self)
+                xml_results.print_xml_results('data.xml')
 
 
 if __name__ == "__main__":

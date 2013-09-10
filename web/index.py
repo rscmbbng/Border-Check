@@ -14,7 +14,11 @@ xmlTag = dom.getElementsByTagName('travel')[0].toxml()
 xmlData= xmlTag.replace('<travel>','').replace('</travel>','')
 xmlHost = dom.getElementsByTagName('host')[0].toxml()
 xmlIP = dom.getElementsByTagName('ip')[0].toxml()
-xmlRoutes = dom.getElementsByTagName('routes')[0].toxml()
+xmlLongitude = dom.getElementsByTagName('longitude')[0].toxml()
+xmlLatitude = dom.getElementsByTagName('latitude')[0].toxml()
+xmlCity = dom.getElementsByTagName('city')[0].toxml()
+xmlCountry = dom.getElementsByTagName('country')[0].toxml()
+xmlServerName = dom.getElementsByTagName('server_name')[0].toxml()
 xmlMeta = dom.getElementsByTagName('meta')[0].toxml()
 
 output = """
@@ -41,8 +45,20 @@ output = """
           <td>"""+xmlIP+"""</td>
         </tr>
         <tr>
-          <td><b>Packages Route:</b></td>
-        <td>"""+xmlRoutes+"""</td>
+          <td><b>Coordinates:</b></td>
+          <td>"""+xmlLongitude+""" : """+xmlLatitude+"""</td>
+        </tr>
+        <tr>
+          <td><b>Server name:</b></td>
+        <td>"""+xmlServerName+"""</td>
+        </tr>
+        <tr>
+          <td><b>Country:</b></td>
+        <td>"""+xmlCountry+"""</td>
+        </tr>
+        <tr>
+          <td><b>City:</b></td>
+        <td>"""+xmlCity+"""</td>
         </tr>
         <tr>
         <td><b>Metadata:</b></td>

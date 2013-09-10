@@ -18,12 +18,20 @@ class xml_reporting(object):
         root = ET.Element("travel")
         host = ET.SubElement(root, "host")
         ip = ET.SubElement(root, "ip")
-        routes = ET.SubElement(root, "routes")
+        longitude = ET.SubElement(root, "longitude")
+        latitude = ET.SubElement(root, "latitude")
+        city = ET.SubElement(root, "city")
+        country = ET.SubElement(root, "country")
+        server_name = ET.SubElement(root, "server_name")
         meta = ET.SubElement(root, "meta")
 
         host.text = self.instance.url[0]
         ip.text = self.instance.ip
-        routes.text = self.instance.routes
+        longitude.text = self.instance.longitude
+        latitude.text = self.instance.latitude
+        city.text = self.instance.city
+        country.text = self.instance.country
+        server_name.text = self.instance.server_name
         meta.text = "Connect here XML metadata"
 
         tree = ET.ElementTree(root)
