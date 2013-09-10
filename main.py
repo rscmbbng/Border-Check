@@ -41,6 +41,7 @@ class bc(object):
         self.url = ""
         self.old_url = ""
         self.ip = ""
+        self.host_name =""
         self.city = ""
         self.country = ""
         self.routes = ""
@@ -152,26 +153,19 @@ class bc(object):
                 self.browser_history_path = chromium_lin
 
         print "Browser Options:\n" + '='*45 + "\n"
-        if self.browser == "F":
-            print "Browser used: Firefox \n"
-        elif self.browser == "C":
-            print "Browser used: Chrome \n"
-        elif self.browser == "CHROMIUM":
-            print "Browser used: Chromium \n"
-        elif self.browser == "S":
-            print "Browser used: Safari \n"
+        print "Currently used:", self.browser_path.split('/')[-1], "\n"
 
         if self.options.debug == True:
-            if self.browser == "F" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
-            elif self.browser == "F" and sys.platform.startswith('linux'):
+            if sys.platform == 'darwin':
+                if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
+                    self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+            elif sys.platform.startswith('linux') and self.browser == "F":
                 self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
-            elif self.browser == "C" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
-            elif self.browser == "CHROMIUM" and sys.platform == 'darwin':
-                self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
 
-            print "Version:", self.browser_version, "\n"
+            if self.browser == "S":
+                print "Can't get Safari version information, you'll have to look it up manually \n"
+            else:
+                print "Version:", self.browser_version, "\n"
             print "History:", self.browser_history_path, "\n"
 
         #move the subprocesses to debug mode
@@ -263,7 +257,12 @@ class bc(object):
                     except: 
                         print "Error: network is not responding correctly. Aborting...\n"
                         sys.exit(2)
-            logfile = open('logfile', 'a')
+            #Make a tracelog file.
+            if self.options.debug == True:
+                logfile = open('tracelogfile', 'a')
+                thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url[0], "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
+                for item in thingstolog:
+                    logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
                 logfile.write(line)
@@ -271,6 +270,7 @@ class bc(object):
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         record = self.geoip.record_by_addr(ip)
+                        self.host_name = socket.gethostbyaddr(ip)[0] 
                         #print record
                         try:
                             if record.has_key('country_name') and record['city'] is not '':
@@ -369,8 +369,6 @@ class bc(object):
         else:
             traces = self.try_running(self.traces, "\nInternal error tracerouting.")
         # export data to XML
-        xml_results = xml_reporting(self)
-        xml_results.print_xml_results('data.xml')
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
         # stay latent waiting for new urls
@@ -383,6 +381,8 @@ class bc(object):
                     pass
                 else:
                     traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+                    xml_results = xml_reporting(self)
+                    xml_results.print_xml_results('data.xml')
 
 if __name__ == "__main__":
     app = bc()
