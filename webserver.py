@@ -12,6 +12,7 @@ from runpy import run_module
 from urlparse import urlparse
 from cgi import parse_qs #, parse_header, parse_multipart
 import cgi
+from options import BCOptions
 
 port = 8080
 wwwroot = "web/"
@@ -69,8 +70,9 @@ class HttpHandler(BaseHTTPRequestHandler):
                 content = query.get('upfile')
         except:
             pass
-        # only for debug mode
-        #print "Request from %s:%d"%self.client_address + "  " + uri
+        # print interactions w server
+        # if self.options.debug == True:
+        #     print "Request from %s:%d"%self.client_address + "  " + uri
         if uri[-1] == '/' or os.path.isdir(file):
             file = file + "/index.py"
         if os.path.isfile(file + ".py"):

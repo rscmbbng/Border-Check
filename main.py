@@ -41,7 +41,7 @@ class bc(object):
         self.url = ""
         self.old_url = ""
         self.ip = ""
-        self.host_name =""
+        self.hop_host_name =""
         self.city = ""
         self.country = ""
         self.routes = ""
@@ -270,20 +270,24 @@ class bc(object):
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         record = self.geoip.record_by_addr(ip)
-                        self.host_name = socket.gethostbyaddr(ip)[0] 
                         #print record
+                        try:
+                           self.hop_host_name = socket.gethostbyaddr(ip)[0]
+                        except:
+                            self.hop_host_name = 'No hostname'
                         try:
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
                                 city = record['city']
-                                print "Trace:", count, "->", ip, "->", city, "->", country
+
+                                print "Trace:", count, "->", ip, "->", city, "->", country, "->", self.hop_host_name
                                 count+=1
                                 self.city = city
                                 self.country = country
                                 self.routes = "Trace:", count, "->", ip, "->", city, "->", country
                             elif record.has_key('country_name'):
                                 country = record['country_name']
-                                print "Trace:", count, "->", ip, "->", country
+                                print "Trace:", count, "->", ip, "->", country, "->", self.hop_host_name
                                 self.country = country
                                 self.routes = "Trace:", count, "->", ip, "->", country
                                 count+=1
@@ -368,7 +372,10 @@ class bc(object):
             pass
         else:
             traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-        # export data to XML
+            #xml_results = xml_reporting(self)
+            #xml_results.print_xml_results('data.xml')
+            # export data to XML
+
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
         # stay latent waiting for new urls
@@ -381,8 +388,9 @@ class bc(object):
                     pass
                 else:
                     traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-                    xml_results = xml_reporting(self)
-                    xml_results.print_xml_results('data.xml')
+                    #xml_results = xml_reporting(self)
+                    #xml_results.print_xml_results('data.xml')
+
 
 if __name__ == "__main__":
     app = bc()
