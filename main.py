@@ -35,12 +35,13 @@ class bc(object):
         Init defaults
         """
         self.browser = "" # "F" Firefox / "C" Chrome
-        self.browser_path = ""
-        self.browser_history_path = ""
-        self.browser_version = ""
+        self.browser_path = "" #the path to the browser application
+        self.browser_history_path = "" # the path to the browser history file
+        self.browser_version = "" # the version of the browser
         self.url = ""
         self.old_url = ""
-        self.ip = ""
+        self.destination_ip = ""
+        self.hop_ip = ""
         self.longitude = ""
         self.latitude = ""
         self.hop_host_name = ""
@@ -48,6 +49,9 @@ class bc(object):
         self.country = ""
         self.server_name = "" 
         self.hop_count = 1 # number of hops
+        self.result_list = []
+        self.vardict ={}
+        self.asn = ''
 
         if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
             os.remove('data.xml')  
@@ -183,7 +187,6 @@ class bc(object):
                 print "Version:", self.browser_version, "\n"
             print "History:", self.browser_history_path, "\n"
 
-        #move the subprocesses to debug mode
 
     def getURL(self):
         """
@@ -236,7 +239,6 @@ class bc(object):
         # Set database (GeoLiteCity)
         self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
         self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
-        self.hop_count = 1
 
         print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
@@ -244,10 +246,10 @@ class bc(object):
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
-        self.ip = url_ip
+        self.destination_ip = url_ip
         print "Host:", url, "\n"
         if url != self.old_url:
-            count = 1
+            self.hop_count = 1
             if sys.platform.startswith('linux'):
                 # using udp
                 try:
@@ -265,7 +267,7 @@ class bc(object):
                 # using udp     
                 try:            
                     print "Method: udp\n"
-                    a = subprocess.Popen(['lft', '-S', '-n', '-e', url_ip], stdout=subprocess.PIPE)
+                    a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE)
                 # using tcp
                 except:     
                     try:    
@@ -282,18 +284,19 @@ class bc(object):
                     logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
-                self.hop_count = self.hop_count + 1
 
                 if self.options.debug == True:
                     logfile.write(line)
                 parts = line.split()
+
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
+                        self.hop_ip = ip
                         record = self.geoip.record_by_addr(ip)
                         try:
-                            asn = self.geoasn.org_by_addr(ip)
+                            self.asn = self.geoasn.org_by_addr(ip)
                         except:
-                            asn = 'nothing'
+                            self.asn = 'No ASN provided'
                         #print record
                         try:
                             self.hop_host_name = socket.gethostbyaddr(ip)[0]
@@ -311,21 +314,25 @@ class bc(object):
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
                                 city = record['city']
-                                print "Trace:", count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, asn
-                                count+=1
+                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, self.asn
+                                #self.hop_count +=1
                                 self.city = city
                                 self.country = country
                                 self.server_name = self.hop_host_name
                             elif record.has_key('country_name'):
                                 country = record['country_name']
-                                print "Trace:", count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, asn
+                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, self.asn
                                 self.country = country
+                                self.city = '-'
                                 self.server_name = self.hop_host_name
-                                count+=1
+                                #self.hop_count+=1
+                            self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn}
                         except:
-                            print "Trace:", count, "->", "Not allowed"
-                            count+=1
+                            print "Trace:", self.hop_count, "->", "Not allowed"
+                        self.hop_count+=1
+
                         # write xml data to file
+                        self.result_list.append(self.vardict)
                         xml_results = xml_reporting(self)
                         xml_results.print_xml_results('data.xml')
 
@@ -349,7 +356,7 @@ class bc(object):
             try:
                 print "Downloading GeoIP database...\n"
                 if self.options.debug == True:
-                    print "Fetching from:", maxmind
+                    print "Fetching from:", maxmind, '\n'
                 urllib.urlretrieve(maxmind,
                                    'GeoLiteCity.gz')
             except:
@@ -376,8 +383,8 @@ class bc(object):
             try:
                 print "Downloading GeoIP ASN database...\n"
                 if self.options.debug == True:
-                    print "Fetching from:", maxmind_asn
-                urllib.urlretrieve(maxmind,
+                    print "Fetching from:", maxmind_asn,'\n'
+                urllib.urlretrieve(maxmind_asn,
                                    'GeoIPASNum.gz')
             except:
                 print("[Error] - Something wrong fetching GeoIP maps from the Internet. Aborting..."), "\n"
