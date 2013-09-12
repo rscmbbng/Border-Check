@@ -48,7 +48,7 @@ output = """
    <link rel="stylesheet" href="style.css" />
     <script src="js/leaflet/leaflet.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>-->
-     <meta http-equiv="refresh" content="5">
+     <meta http-equiv="refresh" content="3">
 </head>
 <body>
  <center>

@@ -41,12 +41,17 @@ class bc(object):
         self.url = ""
         self.old_url = ""
         self.ip = ""
-        self.longitude =""
+        self.longitude = ""
         self.latitude = ""
-        self.hop_host_name =""
+        self.hop_host_name = ""
         self.city = ""
         self.country = ""
         self.server_name = "" 
+        self.hop_count = 1 # number of hops
+
+        if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
+            os.remove('data.xml')  
+        open('data.xml', 'w') # starting a new xml data container in write mode
 
     def set_options(self, options):
         """
@@ -231,6 +236,7 @@ class bc(object):
         # Set database (GeoLiteCity)
         self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
         self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
+        self.hop_count = 1
 
         print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
@@ -276,6 +282,8 @@ class bc(object):
                     logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
+                self.hop_count = self.hop_count + 1
+
                 if self.options.debug == True:
                     logfile.write(line)
                 parts = line.split()
@@ -286,10 +294,9 @@ class bc(object):
                             asn = self.geoasn.org_by_addr(ip)
                         except:
                             asn = 'nothing'
-
                         #print record
                         try:
-                           self.hop_host_name = socket.gethostbyaddr(ip)[0]
+                            self.hop_host_name = socket.gethostbyaddr(ip)[0]
                         except:
                             self.hop_host_name = 'No hostname'
                         try:
@@ -304,25 +311,29 @@ class bc(object):
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
                                 city = record['city']
-
-
-                                print "Trace:", count, "->", ip, "->", city, "->", country, "->", self.hop_host_name, asn
+                                print "Trace:", count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, asn
                                 count+=1
                                 self.city = city
                                 self.country = country
                                 self.server_name = self.hop_host_name
                             elif record.has_key('country_name'):
                                 country = record['country_name']
-                                print "Trace:", count, "->", ip, "->", country, "->", self.hop_host_name, asn
+                                print "Trace:", count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, asn
                                 self.country = country
                                 self.server_name = self.hop_host_name
                                 count+=1
                         except:
                             print "Trace:", count, "->", "Not allowed"
                             count+=1
+                        # write xml data to file
+                        xml_results = xml_reporting(self)
+                        xml_results.print_xml_results('data.xml')
+
             if self.options.debug == True:
                 logfile.close()
             self.old_url = url
+            self.hop_count = 0 # to start a new map
+            print "\n"
 
     def getGEO(self):
         """
@@ -401,6 +412,12 @@ class bc(object):
         url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
         # set geoip database
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
+        # run traceroutes
+        match_ip = self.url[0].strip('http://').strip(':8080')
+        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+            pass
+        else:
+            traces = self.try_running(self.traces, "\nInternal error tracerouting.")
         # start web mode (on a different thread)
         try:
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
@@ -414,29 +431,6 @@ class bc(object):
             webbrowser.open('http://127.0.0.1:8080', new=1)
         except:
             print "Error: Browser is not responding correctly.\n"
-        # run traceroutes
-        match_ip = self.url[0].strip('http://').strip(':8080')
-        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
-            self.ip = 'localhost'
-            self.longitude = '-'
-            self.latitude = '-'  
-            self.city = '-'
-            self.country = '-'
-            self.server_name = '-'
-            pass
-        else:
-            self.ip = '' #this is overwritten
-            self.longitude = '-'
-            self.latitude = '-' 
-            self.city = '-'
-            self.country = 'waiting'
-            self.server_name = 'waiting'
-            xml_results = xml_reporting(self)
-            xml_results.print_xml_results('data.xml')
-            traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-        # export data to XML    
-        xml_results = xml_reporting(self)
-        xml_results.print_xml_results('data.xml')
 
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
@@ -447,26 +441,9 @@ class bc(object):
             match_ip = url.strip('http://').strip(':8080')
             if url != self.old_url:
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
-                    self.ip = 'localhost' 
-                    self.longitude = '-'
-                    self.latitude = '-'  
-                    self.city = '-'
-                    self.country = '-'
-                    self.server_name = '-' 
                     pass
                 else:
-                    self.ip = '' #this is overwritten
-                    self.longitude = '-'
-                    self.latitude = '-'
-                    self.city = '-'
-                    self.country = 'waiting'
-                    self.server_name = 'waiting'
-                    xml_results = xml_reporting(self)
-                    xml_results.print_xml_results('data.xml')
                     traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-                xml_results = xml_reporting(self)
-                xml_results.print_xml_results('data.xml')
-
 
 if __name__ == "__main__":
     app = bc()
