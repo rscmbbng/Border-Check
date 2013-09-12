@@ -155,7 +155,15 @@ class bc(object):
                 self.browser_history_path = chromium_lin
 
         print "Browser Options:\n" + '='*45 + "\n"
-        print "Currently used:", self.browser_path.split('/')[-1], "\n"
+        if sys.platform.startswith('linux'):
+            if self.browser == "F":
+                print "Currently used: Firefox\n"
+            if self.browser == "C":
+                print "Currently used: Chrome\n"
+            if self.browser == "CHROMIUM":
+                print "Currently used: Chromium\n"
+        else:
+            print "Currently used:", self.browser_path.split('/')[-1], "\n"
 
         if self.options.debug == True:
             if sys.platform == 'darwin':
@@ -385,7 +393,7 @@ class bc(object):
         print(str(p.version))
         print('='*75)
         # root checker
-        root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
+        #root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
         # extract browser type and path
         browser = self.try_running(self.check_browser, "\nInternal error checking browser files path.")
         # extract url
