@@ -35,13 +35,13 @@ output = """
      <tr>
      <td><center><div id="map" style="width: 600px; height: 400px"></div></center></td>
 	<script>
-		var map = L.map('map').setView([23.505, -3.09], 18);
+		var map = L.map('map').setView(["""+xmlLongitude+""", """+xmlLatitude+"""], 14);
 		L.tileLayer('Border Check', {
 			maxZoom: 18,
 			attribution: 'Map: <a href="http://openstreetmap.org">OpenStreetMap</a>'
 		}).addTo(map);
 
-		L.marker([51.5, -0.09]).addTo(map)
+		L.marker(["""+xmlLongitude+""", """+xmlLatitude+"""]).addTo(map)
 			.bindPopup("<b>"""+xmlMeta+"""</b><br />").openPopup();
 
 		var popup = L.popup();
