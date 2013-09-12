@@ -276,7 +276,8 @@ class bc(object):
                     logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
             for line in a.stdout:
-                logfile.write(line)
+                if self.options.debug == True:
+                    logfile.write(line)
                 parts = line.split()
                 for ip in parts:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
@@ -393,7 +394,7 @@ class bc(object):
         print(str(p.version))
         print('='*75)
         # root checker
-        #root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
+        root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
         # extract browser type and path
         browser = self.try_running(self.check_browser, "\nInternal error checking browser files path.")
         # extract url
