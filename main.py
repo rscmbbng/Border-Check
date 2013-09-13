@@ -34,24 +34,29 @@ class bc(object):
         """
         Init defaults
         """
+        self.operating_system = '' #The operating system being used
         self.browser = "" # "F" Firefox / "C" Chrome
         self.browser_path = "" #the path to the browser application
         self.browser_history_path = "" # the path to the browser history file
         self.browser_version = "" # the version of the browser
         self.url = ""
         self.old_url = ""
-        self.destination_ip = ""
-        self.hop_ip = ""
-        self.longitude = ""
+        self.destination_ip = "" #the final destination of a trace
+        self.hop_ip = "" #the ip of servers on the route
+        self.longitude = "" 
         self.latitude = ""
-        self.hop_host_name = ""
+        self.hop_host_name = "" #hostname of servers on the route
         self.city = ""
         self.country = ""
         self.server_name = "" 
         self.hop_count = 1 # number of hops
-        self.result_list = []
-        self.vardict ={}
-        self.asn = ''
+        self.result_list = []  #list to collect all the variables of a trace
+        self.vardict ={} #dict to store all the variables of a hop
+        self.asn = '' #ASN number of a server
+        self.method = '-e' # the tracing method, -e = TCP, -u = UDP
+        self.content = '' # the results of a traceroute
+        self.attempts = 0 # the number of attempts at a traceroute
+        self.timestamp = '' #the time it took to go to a hop
 
         if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
             os.remove('data.xml')  
@@ -99,6 +104,7 @@ class bc(object):
         Check browsers used by system
         """
         if sys.platform == 'darwin':
+            self.operating_system = 'darwin'
             # paths to the browsing history db's 
             f_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
             c_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
@@ -146,6 +152,7 @@ class bc(object):
                 print "Warning: None of the currently supported browsers (Firefox, Chrome, Chromium, Safari) are installed."
 
         elif sys.platform.startswith('linux'):
+            self.operating_system = 'linux'
             f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
             c_lin = os.path.join(os.path.expanduser('~'), '.config/google-chrome/History')
             chromium_lin = os.path.join(os.path.expanduser('~'), '.config/chromium/Default/History')
@@ -232,6 +239,72 @@ class bc(object):
         self.url = url
         return url[0]
 
+    def lft(self):
+        """
+        Run an LFT
+        """
+        #try:
+        if self.operating_system == 'darwin':
+            self.content = subprocess.check_output(['lft', self.method, '-n', '-S', self.destination_ip])
+            
+        if self.operating_system == 'linux':
+            if self.method == '-e':
+                self.method = '-E'
+            self.content = subprocess.check_output(['lft', '-S', '-n', self.method, self.destination_ip])
+
+        self.attempts += 1
+        if self.options.debug == True:
+            print "Tracing:", self.destination_ip, "with method:", self.method, 'attempt:', self.attempts, '\n'
+        self.lft_parse()
+
+        # except: 
+        #     print "Error: network is not responding correctly. Aborting...\n"
+        #     sys.exit(2)
+    
+    def lft_parse(self):
+            """
+            Parse the lft to see if it produced any results, if not, run another LFT using a different method
+            """
+            
+
+            output = self.content.splitlines()
+
+            if output[-1] == "**  [80/tcp no reply from target]  Try advanced options (use -VV to see packets).":
+                if self.options.debug == True:
+                    print 'TCP method doesn''t work, switching to UDP \n'
+                self.method = '-u'
+                time.sleep(2)
+                self.lft()
+
+            if '[target closed]' in output[-1] and self.method == '-e' or self.method == '-E':
+                if self.options.debug == True:
+                    print 'Target closed, retrying with UDP \n'
+                self.method = '-u'
+                time.sleep(2)
+                self.lft()
+
+            if '[target open]' in output[-1] and len(output) < 5:
+                if self.options.debug == True:
+                    print 'Target open, but filtered. Retrying with UDP \n'
+                self.method = '-u'
+                time.sleep(2)
+                self.lft()
+
+            if 'udp no reply from target]  Use -VV to see packets.' in output[-1]:
+                if self.options.debug == True:
+                    print 'Trace ended with results \n'
+                return
+
+            if '[port unreachable]' in output[-1]:
+                if self.options.debug == True:
+                    print 'Port unreachable \n'
+                return
+
+            if '[target open]' in output[-1] and len(output) > 5:
+                if self.options.debug == True:
+                    print 'Target open, with results \n'
+                return
+
     def traces(self):
         '''
         Use LFT to traceroute objetives and pass data to webserver
@@ -249,49 +322,30 @@ class bc(object):
         self.destination_ip = url_ip
         print "Host:", url, "\n"
         if url != self.old_url:
-            self.hop_count = 1
-            if sys.platform.startswith('linux'):
-                # using udp
-                try:
-                    print "Method: udp\n"
-                    a = subprocess.Popen(['lft', '-S', '-n', url_ip], stdout=subprocess.PIPE)
-                # using tcp
-                except:
-                    try:
-                        print "Method: tcp\n"
-                        a = subprocess.Popen(['lft', '-S', '-n', '-E', url_ip], stdout=subprocess.PIPE)
-                    except:
-                        print "Error: network is not responding correctly. Aborting...\n"
-                        sys.exit(2)
-            else:
-                # using udp     
-                try:            
-                    print "Method: udp\n"
-                    a = subprocess.Popen(['lft', '-S', '-n', '-u', url_ip], stdout=subprocess.PIPE)
-                # using tcp
-                except:     
-                    try:    
-                        print "Method: tcp\n"
-                        a = subprocess.Popen(['lft', '-S', '-n', '-e', url_ip], stdout=subprocess.PIPE)
-                    except: 
-                        print "Error: network is not responding correctly. Aborting...\n"
-                        sys.exit(2)
-            #Make a tracelog file.
+            self.hop_count = 0
+            self.attempts = 0
+            self.lft()
+
+
             if self.options.debug == True:
                 logfile = open('tracelogfile', 'a')
                 thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url[0], "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
                 for item in thingstolog:
                     logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
-            for line in a.stdout:
 
+            output = self.content.splitlines()
+
+            for line in output:
                 if self.options.debug == True:
-                    logfile.write(line)
-                parts = line.split()
+                    logfile.write(line+'\n')
 
-                for ip in parts:
+                line = line.split()
+
+                for ip in line:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         self.hop_ip = ip
+
                         record = self.geoip.record_by_addr(ip)
                         try:
                             self.asn = self.geoasn.org_by_addr(ip)
@@ -314,19 +368,19 @@ class bc(object):
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
                                 city = record['city']
-                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, self.asn
+                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, "->", self.asn
                                 #self.hop_count +=1
                                 self.city = city
                                 self.country = country
                                 self.server_name = self.hop_host_name
                             elif record.has_key('country_name'):
                                 country = record['country_name']
-                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, self.asn
+                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, "->", self.asn
                                 self.country = country
                                 self.city = '-'
                                 self.server_name = self.hop_host_name
                                 #self.hop_count+=1
-                            self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn}
+                            self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp }
                         except:
                             print "Trace:", self.hop_count, "->", "Not allowed"
                         self.hop_count+=1
@@ -336,11 +390,16 @@ class bc(object):
                         xml_results = xml_reporting(self)
                         xml_results.print_xml_results('data.xml')
 
+                    if re.match(r'\d{1,2}\.\dms$', ip):
+                        self.timestamp = ip.replace('ms', '')
+
             if self.options.debug == True:
                 logfile.close()
             self.old_url = url
             self.hop_count = 0 # to start a new map
             print "\n"
+            return
+
 
     def getGEO(self):
         """

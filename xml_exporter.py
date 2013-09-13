@@ -27,6 +27,7 @@ class xml_reporting(object):
             country = ET.SubElement(hop, "country")
             server_name = ET.SubElement(hop, "server_name")
             asn = ET.SubElement(hop, "asn")
+            timestamp = ET.SubElement(hop, "timestamp")
             meta = ET.SubElement(hop, "meta")
 
             hop.text = str(i['hop_count'])
@@ -38,6 +39,7 @@ class xml_reporting(object):
             country.text = i['country']
             server_name.text = i['server_name']
             asn.text = i['asn']
+            timestamp.text = i['timestamp']
             meta.text = "Connect here XML metadata"
 
             tree = ET.ElementTree(root)
