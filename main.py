@@ -324,6 +324,7 @@ class bc(object):
         if url != self.old_url:
             self.hop_count = 0
             self.attempts = 0
+            self.result_list = []
             self.lft()
 
 
@@ -362,8 +363,8 @@ class bc(object):
                             latitude = str(record['latitude'])
                             self.latitude = latitude
                         except:
-                            self.longitude = '-'
-                            self.latitude = '-'
+                            self.longitude = '4.0'
+                            self.latitude = '40.0'
                         try:
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
@@ -509,6 +510,10 @@ class bc(object):
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
                     pass
                 else:
+                    if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
+                        os.remove('data.xml')  
+                    open('data.xml', 'w') # starting a new xml data container in write mode
+
                     traces = self.try_running(self.traces, "\nInternal error tracerouting.")
 
 if __name__ == "__main__":
