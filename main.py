@@ -251,10 +251,10 @@ class bc(object):
             if self.method == '-e':
                 self.method = '-E'
             try:
-                self.content = subprocess.check_output(['lft', '-S', '-n', self.method, self.destination_ip])
+                self.content = subprocess.check_output(['lft', '-S', '-n', self.destination_ip])
                 # support for older python versions (<2.7) that don't support subprocess.check_output
             except:
-                a = subprocess.Popen(['lft', '-S', '-n', self.method, self.destination_ip], stdout=subprocess.PIPE)
+                a = subprocess.Popen(['lft', '-S', '-n', self.destination_ip], stdout=subprocess.PIPE)
                 self.content = a.stdout.read()
 
         self.attempts += 1
@@ -331,27 +331,21 @@ class bc(object):
             self.attempts = 0
             self.result_list = []
             self.lft()
-
-
             if self.options.debug == True:
                 logfile = open('tracelogfile', 'a')
                 thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url[0], "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
                 for item in thingstolog:
                     logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
-
             output = self.content.splitlines()
-
             for line in output:
                 if self.options.debug == True:
                     logfile.write(line+'\n')
 
                 line = line.split()
-
                 for ip in line:
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         self.hop_ip = ip
-
                         record = self.geoip.record_by_addr(ip)
                         try:
                             self.asn = self.geoasn.org_by_addr(ip)
@@ -389,8 +383,9 @@ class bc(object):
                             self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp }
                         except:
                             print "Trace:", self.hop_count, "->", "Not allowed"
-                        self.hop_count+=1
+                            self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp }
 
+                        self.hop_count+=1
                         # write xml data to file
                         self.result_list.append(self.vardict)
                         xml_results = xml_reporting(self)
@@ -403,9 +398,7 @@ class bc(object):
                 logfile.close()
             self.old_url = url
             self.hop_count = 0 # to start a new map
-            print "\n"
             return
-
 
     def getGEO(self):
         """

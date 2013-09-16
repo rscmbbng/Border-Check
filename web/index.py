@@ -1,25 +1,21 @@
-#new index.py
-# -*- coding: ISO-8859-1 -*-
-from lxml import etree
-
+#!/usr/bin/python
+# -*- coding: iso-8859-15 -*-
+"""
+BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
+GPLv3 - 2013 by psy (epsylon@riseup.net)
+"""
 from xml.dom.minidom import parseString
+import xml.etree.ElementTree as ET
 
 # extract data from a xml file
 f = open('data.xml', 'r')
 f2 = open('data.xml', 'r')
-xml = etree.parse(f)
-
+xml = ET.parse(f)
 data = f2.read()
 dom = parseString(data.encode('utf-8'))
-
 f.close()
 f2.close()
-
-
-
-
 n_hops = dom.getElementsByTagName('hop')[-1].toxml().replace('<hop>', '').replace('</hop','')
-
 hoplist = []
 geoarray = []
 latlong= []
@@ -27,26 +23,21 @@ latlong= []
 b = ''
 
 for counter in range(1, int(xml.findall('hop')[-1].text)+1):
-  hop = parseString(dom.getElementsByTagName('hop')[counter].toxml().encode('utf-8'))
-  server_name = hop.getElementsByTagName('server_name')[0].toxml().replace('<server_name>','').replace('</server_name>','')
-  asn = hop.getElementsByTagName('asn')[0].toxml().replace('<asn>','').replace('</asn>','')
-  hop_ip = hop.getElementsByTagName('hop_ip')[0].toxml().replace('<hop_ip>','').replace('</hop_ip>','')
-  longitude = hop.getElementsByTagName('longitude')[0].toxml().replace('<longitude>','').replace('</longitude>','')
-  latitude = hop.getElementsByTagName('latitude')[0].toxml().replace('<latitude>','').replace('</latitude>','')
+    hop = parseString(dom.getElementsByTagName('hop')[counter].toxml().encode('utf-8'))
+    server_name = hop.getElementsByTagName('server_name')[0].toxml().replace('<server_name>','').replace('</server_name>','')
+    asn = hop.getElementsByTagName('asn')[0].toxml().replace('<asn>','').replace('</asn>','')
+    hop_ip = hop.getElementsByTagName('hop_ip')[0].toxml().replace('<hop_ip>','').replace('</hop_ip>','')
+    longitude = hop.getElementsByTagName('longitude')[0].toxml().replace('<longitude>','').replace('</longitude>','')
+    latitude = hop.getElementsByTagName('latitude')[0].toxml().replace('<latitude>','').replace('</latitude>','')
 
-  point = """    L.marker(["""+latitude+""", """+longitude+"""]).addTo(map)
-  .bindPopup("<b>"""+server_name+"""</b><br />"""+hop_ip+"""<br />"""+asn+"""<br />").openPopup(); """
+    point = """    L.marker(["""+latitude+""", """+longitude+"""]).addTo(map)
+    .bindPopup("<b>"""+server_name+"""</b><br />"""+hop_ip+"""<br />"""+asn+"""<br />").openPopup(); """
 
-  latlong = [float(latitude.encode('utf-8')), float(longitude.encode('utf-8'))]
-  geoarray.append(latlong)
+    latlong = [float(latitude.encode('utf-8')), float(longitude.encode('utf-8'))]
+    geoarray.append(latlong)
 
-  hoplist.append(point)
-
-  b = b+point
-
-
-test = open('test.html','w')
-
+    hoplist.append(point)
+    b = b+point
 
 output = """
 <html>
@@ -78,6 +69,3 @@ output = """
 </body>
 </html>
 """
-
-test.write(output)
-test.close
