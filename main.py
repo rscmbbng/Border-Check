@@ -267,48 +267,46 @@ class bc(object):
         #     sys.exit(2)
     
     def lft_parse(self):
-            """
-            Parse the lft to see if it produced any results, if not, run another LFT using a different method
-            """
-            
+        """
+        Parse the lft to see if it produced any results, if not, run another LFT using a different method
+        """     
+        output = self.content.splitlines()
 
-            output = self.content.splitlines()
+        if output[-1] == "**  [80/tcp no reply from target]  Try advanced options (use -VV to see packets).":
+            if self.options.debug == True:
+                print 'TCP method doesn''t work, switching to UDP \n'
+            self.method = '-u'
+            time.sleep(2)
+            self.lft()
 
-            if output[-1] == "**  [80/tcp no reply from target]  Try advanced options (use -VV to see packets).":
-                if self.options.debug == True:
-                    print 'TCP method doesn''t work, switching to UDP \n'
-                self.method = '-u'
-                time.sleep(2)
-                self.lft()
+        if '[target closed]' in output[-1] and self.method == '-e' or self.method == '-E':
+            if self.options.debug == True:
+                print 'Target closed, retrying with UDP \n'
+            self.method = '-u'
+            time.sleep(2)
+            self.lft()
 
-            if '[target closed]' in output[-1] and self.method == '-e' or self.method == '-E':
-                if self.options.debug == True:
-                    print 'Target closed, retrying with UDP \n'
-                self.method = '-u'
-                time.sleep(2)
-                self.lft()
+        if '[target open]' in output[-1] and len(output) < 5:
+            if self.options.debug == True:
+                print 'Target open, but filtered. Retrying with UDP \n'
+            self.method = '-u'
+            time.sleep(2)
+            self.lft()
 
-            if '[target open]' in output[-1] and len(output) < 5:
-                if self.options.debug == True:
-                    print 'Target open, but filtered. Retrying with UDP \n'
-                self.method = '-u'
-                time.sleep(2)
-                self.lft()
+        if 'udp no reply from target]  Use -VV to see packets.' in output[-1] and len(output) > 5:
+            if self.options.debug == True:
+                print 'Trace ended with results \n'
+            return
 
-            if 'udp no reply from target]  Use -VV to see packets.' in output[-1] and len(output) > 5:
-                if self.options.debug == True:
-                    print 'Trace ended with results \n'
-                return
+        if '[port unreachable]' in output[-1]:
+            if self.options.debug == True:
+                print 'Port unreachable \n'
+            return
 
-            if '[port unreachable]' in output[-1]:
-                if self.options.debug == True:
-                    print 'Port unreachable \n'
-                return
-
-            if '[target open]' in output[-1] and len(output) > 5:
-                if self.options.debug == True:
-                    print 'Target open, with results \n'
-                return
+        if '[target open]' in output[-1] and len(output) > 5:
+            if self.options.debug == True:
+                print 'Target open, with results \n'
+            return
 
     def traces(self):
         '''
@@ -397,6 +395,7 @@ class bc(object):
             if self.options.debug == True:
                 logfile.close()
             self.old_url = url
+            print "\n"
             self.hop_count = 0 # to start a new map
             return
 
