@@ -1,44 +1,52 @@
-#!/usr/local/bin/python
-# -*- coding: iso-8859-15 -*-
-"""
-BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
-GPLv3 - 2013 by psy (epsylon@riseup.net)
-"""
+#new index.py
+# -*- coding: ISO-8859-1 -*-
+from lxml import etree
+
 from xml.dom.minidom import parseString
 
 # extract data from a xml file
-file = open('data.xml','r')
-data = file.read()
-file.close()
-dom = parseString(data)
-xmlTag = dom.getElementsByTagName('travel')[0].toxml()
-xmlData= xmlTag.replace('<travel>','').replace('</travel>','')
-xmlHost = dom.getElementsByTagName('host')[0].toxml()
-xmlIP = dom.getElementsByTagName('hop_ip')[0].toxml()
-xmlLongitude = dom.getElementsByTagName('longitude')[0].toxml()
-xmlLatitude = dom.getElementsByTagName('latitude')[0].toxml()
-xmlCity = dom.getElementsByTagName('city')[0].toxml()
-xmlCountry = dom.getElementsByTagName('country')[0].toxml()
-xmlServerName = dom.getElementsByTagName('server_name')[0].toxml()
-xmlMeta = dom.getElementsByTagName('meta')[0].toxml()
+f = open('data.xml', 'r')
+f2 = open('data.xml', 'r')
+xml = etree.parse(f)
 
-# parse XML inputs
-xmlLongitude = xmlLongitude.replace('<longitude>','')
-xmlLatitude = xmlLatitude.replace('<latitude>','')
-xmlLongitude = xmlLongitude.replace('</longitude>','')
-xmlLatitude = xmlLatitude.replace('</latitude>','')
-xmlMeta = xmlMeta.replace('<meta>','')
-xmlMeta = xmlMeta.replace('</meta>','')
-xmlHost = xmlHost.replace('<host>','')
-xmlHost = xmlHost.replace('</host>','')
-xmlIP = xmlIP.replace('<ip>','')
-xmlIP = xmlIP.replace('</ip>','')
-xmlCity = xmlCity.replace('<city>','')
-xmlCity = xmlCity.replace('</city>','')
-xmlCountry = xmlCountry.replace('<country>','')
-xmlCountry = xmlCountry.replace('</country>','')
-xmlServerName = xmlServerName.replace('<server_name>','')
-xmlServerName = xmlServerName.replace('</server_name>','')
+data = f2.read()
+dom = parseString(data.encode('utf-8'))
+
+f.close()
+f2.close()
+
+
+
+
+n_hops = dom.getElementsByTagName('hop')[-1].toxml().replace('<hop>', '').replace('</hop','')
+
+hoplist = []
+geoarray = []
+latlong= []
+
+b = ''
+
+for counter in range(1, int(xml.findall('hop')[-1].text)+1):
+  hop = parseString(dom.getElementsByTagName('hop')[counter].toxml().encode('utf-8'))
+  server_name = hop.getElementsByTagName('server_name')[0].toxml().replace('<server_name>','').replace('</server_name>','')
+  asn = hop.getElementsByTagName('asn')[0].toxml().replace('<asn>','').replace('</asn>','')
+  hop_ip = hop.getElementsByTagName('hop_ip')[0].toxml().replace('<hop_ip>','').replace('</hop_ip>','')
+  longitude = hop.getElementsByTagName('longitude')[0].toxml().replace('<longitude>','').replace('</longitude>','')
+  latitude = hop.getElementsByTagName('latitude')[0].toxml().replace('<latitude>','').replace('</latitude>','')
+
+  point = """    L.marker(["""+latitude+""", """+longitude+"""]).addTo(map)
+  .bindPopup("<b>"""+server_name+"""</b><br />"""+hop_ip+"""<br />"""+asn+"""<br />").openPopup(); """
+
+  latlong = [float(latitude.encode('utf-8')), float(longitude.encode('utf-8'))]
+  geoarray.append(latlong)
+
+  hoplist.append(point)
+
+  b = b+point
+
+
+test = open('test.html','w')
+
 
 output = """
 <html>
@@ -48,61 +56,28 @@ output = """
    <link rel="stylesheet" href="style.css" />
     <script src="js/leaflet/leaflet.js"></script>
     <!--<script src="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.js"></script>-->
-     <meta http-equiv="refresh" content="3">
+    <script type="text/javascript">
+    
+  window.onload = function () {
+    var map = L.map('map').setView(["""+latitude+""", """+longitude+"""], 2);
+    L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+  
+  """+b+"""
+  
+  var latlong = """+str(geoarray)+"""
+  var polyline = L.polyline(latlong, {color: 'red'}).addTo(map);
+
+};
+</script>
 </head>
 <body>
  <center>
-  <table>
-     <tr>
-     <td><center><div id="map" style="width: 600px; height: 400px"></div></center></td>
-	<script>
-		var map = L.map('map').setView(["""+xmlLatitude+""", """+xmlLongitude+"""], 14);
-
-		L.marker(["""+xmlLatitude+""", """+xmlLongitude+"""]).addTo(map)
-			.bindPopup("<b>"""+xmlMeta+"""</b><br />").openPopup();
-
-		var popup = L.popup();
-	</script>
-    </tr>
-     <tr>
-      <td>
-       <center>
-         <table border="1">
-           <tr>
-            <td><b>Host:</b></td>
-            <td>"""+xmlHost+"""</td>
-           </tr>
-           <tr>
-            <td><b>IP:</b></td>
-            <td>"""+xmlIP+"""</td>
-           </tr>
-           <tr>
-            <td><b>Coordinates:</b></td>
-            <td>"""+xmlLongitude+""" : """+xmlLatitude+"""</td>
-           </tr>
-           <tr>
-            <td><b>Server name:</b></td>
-            <td>"""+xmlServerName+"""</td>
-          </tr>
-          <tr>
-            <td><b>Country:</b></td>
-            <td>"""+xmlCountry+"""</td>
-          </tr>
-          <tr>
-            <td><b>City:</b></td>
-            <td>"""+xmlCity+"""</td>
-          </tr>
-          <tr>
-           <td><b>Metadata:</b></td>
-         
-         <td>"""+xmlMeta+"""</td>
-         </tr>
-     </table>
-   </center>
-   </td>
-  </tr>
- </table>
-</center>
+     <td><center><div id="map" style="width: 1000px; height: 800px"></div></center></td>
 </body>
 </html>
 """
+
+test.write(output)
+test.close

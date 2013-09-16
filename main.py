@@ -250,7 +250,12 @@ class bc(object):
         if self.operating_system == 'linux':
             if self.method == '-e':
                 self.method = '-E'
-            self.content = subprocess.check_output(['lft', '-S', '-n', self.method, self.destination_ip])
+            try:
+                self.content = subprocess.check_output(['lft', '-S', '-n', self.method, self.destination_ip])
+                # support for older python versions (<2.7) that don't support subprocess.check_output
+            except:
+                a = subprocess.Popen(['lft', '-S', '-n', self.method, self.destination_ip], stdout=subprocess.PIPE)
+                self.content = a.stdout.read()
 
         self.attempts += 1
         if self.options.debug == True:
@@ -290,7 +295,7 @@ class bc(object):
                 time.sleep(2)
                 self.lft()
 
-            if 'udp no reply from target]  Use -VV to see packets.' in output[-1]:
+            if 'udp no reply from target]  Use -VV to see packets.' in output[-1] and len(output) > 5:
                 if self.options.debug == True:
                     print 'Trace ended with results \n'
                 return
