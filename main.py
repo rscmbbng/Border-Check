@@ -322,7 +322,7 @@ class bc(object):
         print "URL:", self.url[0], "\n"
 
         url = urlparse(self.getURL()).netloc #changed this for prototyping
-        url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
+        #url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
         self.destination_ip = url_ip
         print "Host:", url, "\n"
@@ -503,7 +503,7 @@ class bc(object):
         # stay latent waiting for new urls
         while True:
             url = urlparse(self.getURL()).netloc
-            url = url.replace('www.','')
+            #url = url.replace('www.','')
             match_ip = url.strip('http://').strip(':8080')
             if url != self.old_url:
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):

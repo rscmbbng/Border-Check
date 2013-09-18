@@ -40,7 +40,6 @@ for counter in range(1, last_hop+1):
     hop_ip_list.append(hop_ip.encode('utf-8'))
     server_name_list.append(server_name.encode('utf-8'))
 
-#f = open('testmap.html', 'w')
 output = """
 <html>
 <head>
@@ -48,7 +47,7 @@ output = """
    <link rel="stylesheet" href="js/leaflet/leaflet.css" />
    <link rel="stylesheet" href="style.css" />
     <script src="js/leaflet/leaflet.js"></script>
-    <script src= "js/rlayer-mod.min.js"></script>
+    <script src= "js/rlayer-modified.min.js"></script>
      <script src= "js/raphael.js"></script>
      <script src="js/jquery-1.10.2.min.js"></script>
      <script type="text/javascript">
@@ -129,5 +128,3 @@ function processStep (index) {
 </body>
 </html>
 """
-f.write(output)
-f.close
