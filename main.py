@@ -186,14 +186,16 @@ class bc(object):
                 if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
                     self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
             elif sys.platform.startswith('linux') and self.browser == "F":
-                self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
-
+                try:
+                    self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
+                except:
+                    a = subprocess.Popen(['firefox', '--version'], stdout=subprocess.PIPE)
+                    self.browser_version = a.stdout.read()
             if self.browser == "S":
                 print "Can't get Safari version information, you'll have to look it up manually \n"
             else:
                 print "Version:", self.browser_version, "\n"
             print "History:", self.browser_history_path, "\n"
-
 
     def getURL(self):
         """
@@ -316,7 +318,7 @@ class bc(object):
         self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
         self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
 
-        print '='*45 + "\n", "Current target:\n" + '='*45 + "\n"
+        print '='*45 + "\n", "Status target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
 
         url = urlparse(self.getURL()).netloc #changed this for prototyping
