@@ -359,8 +359,6 @@ class bc(object):
                 for ip in line:
                     if re.match(r'\d{1,4}\.\dms$', ip):
                         self.timestamp = ip.replace('ms', '')
-                        print self.timestamp
-                        print ('*'*45)
 
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         self.hop_ip = ip
