@@ -22,6 +22,7 @@ geoarray = []
 latlong= []
 asn_list =[]
 server_name_list = []
+timestamp_list = []
 last_hop = int(xml.findall('hop')[-1].text)
 
 for counter in range(1, last_hop+1):
@@ -33,6 +34,7 @@ for counter in range(1, last_hop+1):
     hop_ip = hop_element.getElementsByTagName('hop_ip')[0].toxml().replace('<hop_ip>','').replace('</hop_ip>','')
     longitude = hop_element.getElementsByTagName('longitude')[0].toxml().replace('<longitude>','').replace('</longitude>','')
     latitude = hop_element.getElementsByTagName('latitude')[0].toxml().replace('<latitude>','').replace('</latitude>','')
+    timestamp = hop_element.getElementsByTagName('timestamp')[0].toxml().replace('<timestamp>','').replace('</timestamp>','')
 
     latlong = [float(latitude.encode('utf-8')), float(longitude.encode('utf-8'))]
     geoarray.append(latlong)
@@ -40,6 +42,7 @@ for counter in range(1, last_hop+1):
     hop_list.append(str(hop))
     hop_ip_list.append(hop_ip.encode('utf-8'))
     server_name_list.append(server_name.encode('utf-8'))
+    timestamp_list.append(float(timestamp))
 
 
 f = open('kaart.html', 'w')
@@ -101,6 +104,7 @@ output = """
   var latlong = """+str(geoarray)+"""
   var asn_list = """+str(asn_list)+"""
   server_name_list = """+str(server_name_list)+"""
+  timestamp_list = """+str(timestamp_list)+"""
   //var polyline = L.polyline(latlong, {color: 'red'}).addTo(map);
 
 index = 0
@@ -135,6 +139,11 @@ function processStep (index) {
       window.setTimeout(function () {
       AddStep(latlong[index], latlong[index], index)
      }, 500);}
+
+    else
+    if (index = counter_max-1){
+      console.log('fin')
+      }
 
     index = index + 1
     }

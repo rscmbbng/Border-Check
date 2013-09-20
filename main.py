@@ -357,6 +357,11 @@ class bc(object):
 
                 line = line.split()
                 for ip in line:
+                    if re.match(r'\d{1,4}\.\dms$', ip):
+                        self.timestamp = ip.replace('ms', '')
+                        print self.timestamp
+                        print ('*'*45)
+
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         self.hop_ip = ip
                         record = self.geoip.record_by_addr(ip)
@@ -381,14 +386,14 @@ class bc(object):
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
                                 city = record['city']
-                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, "->", self.asn
+                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
                                 #self.hop_count +=1
                                 self.city = city
                                 self.country = country
                                 self.server_name = self.hop_host_name
                             elif record.has_key('country_name'):
                                 country = record['country_name']
-                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, "->", self.asn
+                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
                                 self.country = country
                                 self.city = '-'
                                 self.server_name = self.hop_host_name
@@ -404,8 +409,7 @@ class bc(object):
                         xml_results = xml_reporting(self)
                         xml_results.print_xml_results('data.xml')
 
-                    if re.match(r'\d{1,2}\.\dms$', ip):
-                        self.timestamp = ip.replace('ms', '')
+
 
             if self.options.debug == True:
                 logfile.close()
