@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
@@ -25,6 +25,7 @@ server_name_list = []
 last_hop = int(xml.findall('hop')[-1].text)
 
 for counter in range(1, last_hop+1):
+    url = xml.getroot().text
     hop_element = parseString(dom.getElementsByTagName('hop')[counter].toxml().encode('utf-8'))
     hop = xml.findall('hop')[counter].text
     server_name = hop_element.getElementsByTagName('server_name')[0].toxml().replace('<server_name>','').replace('</server_name>','')
@@ -40,6 +41,8 @@ for counter in range(1, last_hop+1):
     hop_ip_list.append(hop_ip.encode('utf-8'))
     server_name_list.append(server_name.encode('utf-8'))
 
+
+f = open('kaart.html', 'w')
 output = """
 <html>
 <head>
@@ -51,30 +54,46 @@ output = """
      <script src= "js/raphael.js"></script>
      <script src="js/jquery-1.10.2.min.js"></script>
      <script type="text/javascript">
-        $(function fullScreen(){
-          var h = $(window).height();
-          var w = $(window).width();
-          $("#map").css({
+        $(document).ready (function(){
+          var h = $(window).innerHeight();
+          var w = $(window).innerWidth();
+          $("#wrapper").css({
             "width": w, "height": h
             })
           }) 
 
-          $(document).ready( fullScreen())
-          $(window).resize( fullScreen())
+          //$(document).ready( fullScreen())
+          //$(window).resize( fullScreen())
+
 
   </script>
-     </script
     </head>
 <body>
- <center>
-     <td><center><div id="map" style="width: 100px; height: 100px"></div></center></td>
-
+<div id="wrapper">
+    <div id="header">"""+url+"""</div>
+    <div id="map" style="width: 100%; height: 100%"></div>
+    <div id="bar"><button id='button'><</button></div>
+</div>
   <script type="text/javascript">
   window.onload = function () {
-    var map = L.map('map').setView(["""+latitude+""", """+longitude+"""], 4);
+    var map = L.map('map',{
+        minZoom: 2,
+        maxZoom:5,
+
+        }).setView(["""+latitude+""", """+longitude+"""], 3);
+
     L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
+
+        $('#button').bind('click', function(){
+            $('#bar').animate({"width": '200'})
+            var info = $("<div id = info><p>this is where info goes</p><p>I will make a 'slide back' option later</p></div>")
+                .appendTo("#bar")
+            console.log('click')
+
+            })
+
 
   var hop_list = """+str(hop_list)+"""
   var hop_ip_list = """+str(hop_ip_list)+"""
@@ -121,10 +140,7 @@ function processStep (index) {
     }
 };
 </script>
-</head>
-<body>
- <center>
-     <td><center><div id="map" style="width: 1000px; height: 800px"></div></center></td>
-</body>
 </html>
 """
+f.write(output)
+f.close

@@ -34,29 +34,40 @@ class bc(object):
         """
         Init defaults
         """
-        self.operating_system = '' #The operating system being used
+        # Global variables organised by the function in which they first occur.
+
+        # check_browser():
+        self.operating_system = '' #The operating system being used. Either darwin/linux
         self.browser = "" # "F" Firefox / "C" Chrome
         self.browser_path = "" #the path to the browser application
         self.browser_history_path = "" # the path to the browser history file
         self.browser_version = "" # the version of the browser
-        self.url = ""
-        self.old_url = ""
-        self.destination_ip = "" #the final destination of a trace
-        self.hop_ip = "" #the ip of servers on the route
-        self.longitude = "" 
-        self.latitude = ""
-        self.hop_host_name = "" #hostname of servers on the route
-        self.city = ""
-        self.country = ""
-        self.server_name = "" 
-        self.hop_count = 1 # number of hops
+
+        # lft():
+        self.content = '' # the un-parsed results of a traceroute
+        self.attempts = 0 # the number of attempts at a traceroute
+        self.method = '-e' # the tracing method, -e to use TCP packets, -u for UDP packets
+
+        # traces():
+        self.url = "" # the last visited url from the history file, type is tuple
+        self.old_url = "" # the before last url from the history file
+        self.destination_ip = "" #the ip adress of self.url
+        self.hop_ip = "" #the ip of the servers/router on a hop
+        self.timestamp = "" #the time it took to go to a hop in miliseconds.
+
+        # these variables are all the result of Maxmind DB lookups
+        self.longitude = "" # the lat/long that corresponds the an ip as per Maxmind DB
+        self.latitude = "" # idem
+        self.asn = '' #ASN number of a server
+        self.hop_host_name = "" #hostname of server/router on a hop
+        self.city = "" #
+        self.country = "" #
+        self.server_name = "" # same as self.hop_host_name. perhaps good to clean this.
+        self.hop_count = 1 # number of the current hop in a trace
+
         self.result_list = []  #list to collect all the variables of a trace
         self.vardict ={} #dict to store all the variables of a hop
-        self.asn = '' #ASN number of a server
-        self.method = '-e' # the tracing method, -e = TCP, -u = UDP
-        self.content = '' # the results of a traceroute
-        self.attempts = 0 # the number of attempts at a traceroute
-        self.timestamp = '' #the time it took to go to a hop
+        
 
         if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
             os.remove('data.xml')  
@@ -119,7 +130,7 @@ class bc(object):
                 if os.path.exists(f_his_osx):
                     if len(os.listdir(f_his_osx)) > 2:
                         print 'You have multiple profiles, choosing the last one used'
-                        #filtering the directory that was last modified
+                        #filter to use the directory that was last modified.
                         all_subdirs = [os.path.join(f_his_osx,d)for d in os.listdir(f_his_osx)]
                         try:
                             all_subdirs.remove(os.path.join(f_his_osx,'.DS_Store')) #throwing out .DS_store
@@ -201,7 +212,8 @@ class bc(object):
         """
         Set urls to visit
         """
-        if self.browser == "F": #Firefox history database
+        if self.browser == "F": 
+            #sqlite operation to get the last visited url from history db.
             conn = sqlite3.connect(self.browser_history_path)
             c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
@@ -210,7 +222,7 @@ class bc(object):
         elif self.browser == "C" or self.browser == "CHROMIUM": #Chrome/Chromium history database
             #Hack that makes a copy of the locked database to access it while Chrome is running.
             #Removes the copied database afterwards
-            import filecmp
+            import filecmp # is this a standard module?
             a = self.browser_history_path + 'Copy'
             if os.path.exists(a):
                 if filecmp.cmp(self.browser_history_path, a) == False:
@@ -229,13 +241,13 @@ class bc(object):
             try:
                 from biplist import readPlist
             except:
-                print "\nError importing: biplist lib. \n\nTo run BC with Safari you need the biplist Python Library:\n\n $ pip install biplist\n"
+                print "\nError importing: biplist lib. \n\nTo run BC with Safari you need the biplist Python library:\n\n $ pip install biplist\n"
 
             plist = readPlist(self.browser_history_path)
             url = [plist['WebHistoryDates'][0][''], '']
 
         else: # Browser not allowed
-            print "\nSorry, don't have a compatible browser\n\n"
+            print "\nSorry, you don't have a compatible browser\n\n"
             exit(2)
         
         self.url = url
@@ -312,9 +324,9 @@ class bc(object):
 
     def traces(self):
         '''
-        Use LFT to traceroute objetives and pass data to webserver
+        call LFT to traceroute target and pass data to webserver
         '''
-        # Set database (GeoLiteCity)
+        # Set the maxmind geo databases 
         self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
         self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
 
@@ -324,6 +336,7 @@ class bc(object):
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         #url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
+        self.url = url
         self.destination_ip = url_ip
         print "Host:", url, "\n"
         if url != self.old_url:
@@ -380,10 +393,10 @@ class bc(object):
                                 self.city = '-'
                                 self.server_name = self.hop_host_name
                                 #self.hop_count+=1
-                            self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp }
+                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp }
                         except:
                             print "Trace:", self.hop_count, "->", "Not allowed"
-                            self.vardict = {'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp }
+                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp }
 
                         self.hop_count+=1
                         # write xml data to file
@@ -407,6 +420,7 @@ class bc(object):
         """
         maxmind = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
         geo_db_mirror1 = 'http://xsser.sf.net/map/GeoLiteCity.dat.gz'
+
         print "="*45 + "\n", "GeoIP Options:\n" + '='*45 + "\n"
         # Download, extract and set geoipdatabase
         if not os.path.exists('GeoLiteCity.dat'):
@@ -480,10 +494,14 @@ class bc(object):
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
         # run traceroutes
         match_ip = self.url[0].strip('http://').strip(':8080')
-        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+        #regex for filtering local network IPs
+        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://'):
             pass
         else:
-            traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+            if self.url[0].startswith('file://'):
+                pass
+            else:
+                traces = self.try_running(self.traces, "\nInternal error tracerouting.")
         # start web mode (on a different thread)
         try:
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
@@ -509,11 +527,14 @@ class bc(object):
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
                     pass
                 else:
-                    if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
-                        os.remove('data.xml')  
-                    open('data.xml', 'w') # starting a new xml data container in write mode
-
-                    traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+                    if self.url[0].startswith('file://'):
+                        pass
+                    else:
+                        if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
+                            os.remove('data.xml')  
+                        open('data.xml', 'w') # starting a new xml data container in write mode
+                        traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+            time.sleep(2)
 
 if __name__ == "__main__":
     app = bc()

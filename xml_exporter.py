@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
@@ -30,6 +30,7 @@ class xml_reporting(object):
             timestamp = ET.SubElement(hop, "timestamp")
             meta = ET.SubElement(hop, "meta")
 
+            root.text = i['url']
             hop.text = str(i['hop_count'])
             host.text = i['destination_ip']
             hop_ip.text = i['hop_ip']
