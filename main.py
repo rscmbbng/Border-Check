@@ -53,7 +53,7 @@ class bc(object):
         self.old_url = "" # the before last url from the history file
         self.destination_ip = "" #the ip adress of self.url
         self.hop_ip = "" #the ip of the servers/router on a hop
-        self.timestamp = "" #the time it took to go to a hop in miliseconds.
+        self.timestamp = "1" #the time it took to go to a hop in miliseconds.
 
         # these variables are all the result of Maxmind DB lookups
         self.longitude = "" # the lat/long that corresponds the an ip as per Maxmind DB
@@ -363,17 +363,19 @@ class bc(object):
                                 self.city = city
                                 self.country = country
                                 self.server_name = self.hop_host_name
+                                cc = record['country_code'].lower()
                             elif record.has_key('country_name'):
                                 country = record['country_name']
                                 print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
                                 self.country = country
                                 self.city = '-'
                                 self.server_name = self.hop_host_name
+                                cc = record['country_code'].lower()
                                 #self.hop_count+=1
-                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp }
+                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp, 'country_code': cc  }
                         except:
                             print "Trace:", self.hop_count, "->", "Not allowed"
-                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp }
+                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp, 'country_code': '-' }
 
                         self.hop_count+=1
                         # write xml data to file
