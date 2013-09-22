@@ -136,26 +136,40 @@ class bc(object):
                             pass
                         latest_subdir = max(all_subdirs, key=os.path.getmtime)
                         osx_profile = os.path.join(f_his_osx, latest_subdir)
-                        self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
+                        if self.options.browser: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser
+                        else:
+                            self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
                     else:
                         for folder in os.listdir(f_his_osx):
                             if folder.endswith('.default'):
                                 osx_default = os.path.join(f_his_osx, folder)
-                                self.browser_history_path = os.path.join(osx_default, 'places.sqlite')
-                                #print "Setting:", self.browser_history_path, "as history file"
+                                if self.options.browser: # if exists, extract user browser's history path
+                                    self.browser_history_path = self.options.browser
+                                else:
+                                    self.browser_history_path = os.path.join(osx_default, 'places.sqlite')
                     self.browser = "F"
                     self.browser_path = f_osx
                 elif os.path.exists(c_his_osx):
                     self.browser = "C"
-                    self.browser_history_path = c_his_osx
+                    if self.options.browser: # if exists, extract user browser's history path
+                        self.browser_history_path = self.options.browser
+                    else:
+                        self.browser_history_path = c_his_osx
                     self.browser_path = c_osx
                 elif os.path.exists(chromium_his_osx):
                     self.browser = "CHROMIUM"
-                    self.browser_history_path = chromium_his_osx
+                    if self.options.browser: # if exists, extract user browser's history path
+                        self.browser_history_path = self.options.browser
+                    else:
+                        self.browser_history_path = chromium_his_osx
                     self.browser_path = chromium_osx
                 elif os.path.exists(s_his_osx):
                     self.browser = "S"
-                    self.browser_history_path = s_his_osx
+                    if self.options.browser: # if exists, extract user browser's history path
+                        self.browser_history_path = self.options.browser
+                    else:
+                        self.browser_history_path = s_his_osx
                     self.browser_path = s_osx
             except:
                 print "Warning: None of the currently supported browsers (Firefox, Chrome, Chromium, Safari) are installed."
@@ -170,14 +184,23 @@ class bc(object):
                 for folder in os.listdir(f_lin):
                     if folder.endswith('.default'):
                         lin_default = os.path.join(f_lin, folder)
-                        self.browser_history_path = os.path.join(lin_default, 'places.sqlite')
+                        if self.options.browser: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser
+                        else:
+                            self.browser_history_path = os.path.join(lin_default, 'places.sqlite')
                         self.browser = "F"
             elif os.path.exists(c_lin):
                 self.browser = "C"
-                self.browser_history_path = c_lin
+                if self.options.browser: # if exists, extract user browser's history path
+                    self.browser_history_path = self.options.browser
+                else:
+                    self.browser_history_path = c_lin
             elif os.path.exists(chromium_lin):
                 self.browser = "CHROMIUM"
-                self.browser_history_path = chromium_lin
+                if self.options.browser: # if exists, extract user browser's history path
+                    self.browser_history_path = self.options.browser
+                else:
+                    self.browser_history_path = chromium_lin
         print "Browser Options:\n" + '='*45 + "\n"
         if sys.platform.startswith('linux'):
             if self.browser == "F":
@@ -201,7 +224,7 @@ class bc(object):
             if self.browser == "S":
                 print "Can't get Safari version information, you'll have to look it up manually \n"
             else:
-                print "Version:", self.browser_version, "\n"
+                print "Version:", self.browser_version
             print "History:", self.browser_history_path, "\n"
 
     def getURL(self):
@@ -489,7 +512,7 @@ class bc(object):
             print "Error: Browser is not responding correctly.\n"
 
         print '='*45 + "\n"
-        print "Status: Waiting for new urls\n"
+        print "Status: Waiting for new urls ...\n"
         print "Type 'Control+C' to exit.\n"
         print '='*45 + "\n"
         # stay latent waiting for new urls

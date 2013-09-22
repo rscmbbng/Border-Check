@@ -47,9 +47,7 @@ for counter in range(1, last_hop+1):
     timestamp_list.append(float(timestamp))
     country_code_list.append(country_code.encode('utf-8'))
 
-
-#f = open('kaart.html', 'w')
-#the html
+# HTML + JS container
 output = """
 <html>
 <head>
