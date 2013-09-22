@@ -64,11 +64,9 @@ class bc(object):
         self.country = "" #
         self.server_name = "" # same as self.hop_host_name. perhaps good to clean this.
         self.hop_count = 1 # number of the current hop in a trace
-
         self.result_list = []  #list to collect all the variables of a trace
         self.vardict ={} #dict to store all the variables of a hop
         
-
         if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
             os.remove('data.xml')  
         open('data.xml', 'w') # starting a new xml data container in write mode
@@ -180,7 +178,6 @@ class bc(object):
             elif os.path.exists(chromium_lin):
                 self.browser = "CHROMIUM"
                 self.browser_history_path = chromium_lin
-
         print "Browser Options:\n" + '='*45 + "\n"
         if sys.platform.startswith('linux'):
             if self.browser == "F":
@@ -191,7 +188,6 @@ class bc(object):
                 print "Currently used: Chromium\n"
         else:
             print "Currently used:", self.browser_path.split('/')[-1], "\n"
-
         if self.options.debug == True:
             if sys.platform == 'darwin':
                 if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
@@ -218,7 +214,6 @@ class bc(object):
             c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
             url = c.fetchone()
-
         elif self.browser == "C" or self.browser == "CHROMIUM": #Chrome/Chromium history database
             #Hack that makes a copy of the locked database to access it while Chrome is running.
             #Removes the copied database afterwards
@@ -230,26 +225,21 @@ class bc(object):
                     os.system('cp "' + self.browser_history_path + '" "' + a + '"')
             else:
                 os.system('cp "' + self.browser_history_path + '" "' + a + '"')
-    
             conn = sqlite3.connect(a)
             c = conn.cursor()
             c.execute('select urls.url, urls.last_visit_time FROM urls ORDER BY urls.last_visit_time DESC')
             url = c.fetchone()
             os.system('rm "' + a + '"')
-
         elif self.browser == "S": #Safari history database
             try:
                 from biplist import readPlist
             except:
                 print "\nError importing: biplist lib. \n\nTo run BC with Safari you need the biplist Python library:\n\n $ pip install biplist\n"
-
             plist = readPlist(self.browser_history_path)
             url = [plist['WebHistoryDates'][0][''], '']
-
         else: # Browser not allowed
             print "\nSorry, you don't have a compatible browser\n\n"
             exit(2)
-        
         self.url = url
         return url[0]
 
@@ -260,7 +250,6 @@ class bc(object):
         #try:
         if self.operating_system == 'darwin':
             self.content = subprocess.check_output(['lft', self.method, '-n', '-S', self.destination_ip])
-            
         if self.operating_system == 'linux':
             if self.method == '-e':
                 self.method = '-E'
@@ -270,53 +259,42 @@ class bc(object):
             except:
                 a = subprocess.Popen(['lft', '-S', '-n', self.destination_ip], stdout=subprocess.PIPE)
                 self.content = a.stdout.read()
-
         self.attempts += 1
         if self.options.debug == True:
             print "Tracing:", self.destination_ip, "with method:", self.method, 'attempt:', self.attempts, '\n'
         self.lft_parse()
-
-        # except: 
-        #     print "Error: network is not responding correctly. Aborting...\n"
-        #     sys.exit(2)
     
     def lft_parse(self):
         """
         Parse the lft to see if it produced any results, if not, run another LFT using a different method
         """     
         output = self.content.splitlines()
-
         if output[-1] == "**  [80/tcp no reply from target]  Try advanced options (use -VV to see packets).":
             if self.options.debug == True:
                 print 'TCP method doesn''t work, switching to UDP \n'
             self.method = '-u'
             time.sleep(2)
             self.lft()
-
         if '[target closed]' in output[-1] and self.method == '-e' or self.method == '-E':
             if self.options.debug == True:
                 print 'Target closed, retrying with UDP \n'
             self.method = '-u'
             time.sleep(2)
             self.lft()
-
         if '[target open]' in output[-1] and len(output) < 5:
             if self.options.debug == True:
                 print 'Target open, but filtered. Retrying with UDP \n'
             self.method = '-u'
             time.sleep(2)
             self.lft()
-
         if 'udp no reply from target]  Use -VV to see packets.' in output[-1] and len(output) > 5:
             if self.options.debug == True:
                 print 'Trace ended with results \n'
             return
-
         if '[port unreachable]' in output[-1]:
             if self.options.debug == True:
                 print 'Port unreachable \n'
             return
-
         if '[target open]' in output[-1] and len(output) > 5:
             if self.options.debug == True:
                 print 'Target open, with results \n'
@@ -329,10 +307,8 @@ class bc(object):
         # Set the maxmind geo databases 
         self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
         self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
-
         print '='*45 + "\n", "Status target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
-
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         #url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
         url_ip = socket.gethostbyname(url)
@@ -354,12 +330,10 @@ class bc(object):
             for line in output:
                 if self.options.debug == True:
                     logfile.write(line+'\n')
-
                 line = line.split()
                 for ip in line:
                     if re.match(r'\d{1,4}\.\dms$', ip):
                         self.timestamp = ip.replace('ms', '')
-
                     if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
                         self.hop_ip = ip
                         record = self.geoip.record_by_addr(ip)
@@ -406,9 +380,6 @@ class bc(object):
                         self.result_list.append(self.vardict)
                         xml_results = xml_reporting(self)
                         xml_results.print_xml_results('data.xml')
-
-
-
             if self.options.debug == True:
                 logfile.close()
             self.old_url = url
@@ -422,7 +393,6 @@ class bc(object):
         """
         maxmind = 'http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz'
         geo_db_mirror1 = 'http://xsser.sf.net/map/GeoLiteCity.dat.gz'
-
         print "="*45 + "\n", "GeoIP Options:\n" + '='*45 + "\n"
         # Download, extract and set geoipdatabase
         if not os.path.exists('GeoLiteCity.dat'):
@@ -447,9 +417,7 @@ class bc(object):
             f_out = open('GeoLiteCity.dat', 'wb')
             f_out.write(f_in.read())
             f_in.close()
-
             os.remove('GeoLiteCity.gz')
-
         maxmind_asn = 'http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz'
         # Download, extract and set geoipdatabase
         if not os.path.exists('GeoIPASNum.dat'):
@@ -468,7 +436,6 @@ class bc(object):
             f_out = open('GeoIPASNum.dat', 'wb')
             f_out.write(f_in.read())
             f_in.close()
-
             os.remove('GeoIPASNum.gz')
         print "Database: GeoIPASNum \n"
 
@@ -521,6 +488,7 @@ class bc(object):
 
         print '='*45 + "\n"
         print "Status: Waiting for new urls ...\n"
+        print "Type 'Control+C' to exit...\n"
         # stay latent waiting for new urls
         while True:
             url = urlparse(self.getURL()).netloc
@@ -537,9 +505,7 @@ class bc(object):
                             os.remove('data.xml')  
                         open('data.xml', 'w') # starting a new xml data container in write mode
                         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-            time.sleep(2)
-            #if KeyboardInterrupt:
-            #    break
+            time.sleep(5) # free process time 
 
 if __name__ == "__main__":
     app = bc()
