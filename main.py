@@ -507,11 +507,12 @@ class bc(object):
         # start web mode (on a different thread)
         try:
             t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
+            t.daemon = True
             t.start()
             time.sleep(2)
-        except:
-            print "Error: unable to start thread"
-            pass
+        except (KeyboardInterrupt, SystemExit):
+            t.join()
+            sys.exit()
         # open same browser of history access on a new tab
         try:
             webbrowser.open('http://127.0.0.1:8080', new=1)
@@ -537,6 +538,8 @@ class bc(object):
                         open('data.xml', 'w') # starting a new xml data container in write mode
                         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
             time.sleep(2)
+            #if KeyboardInterrupt:
+            #    break
 
 if __name__ == "__main__":
     app = bc()
