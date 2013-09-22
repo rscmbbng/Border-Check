@@ -14,6 +14,7 @@ class BCOptions(optparse.OptionParser):
                            usage= '\n\nbc [OPTIONS]')
 
         self.add_option("-d", "--debug", action="store_true", dest="debug", help="debug mode")
+        self.add_option("-b", action="store", dest="browser", help="set browser's history path")
 
     def get_options(self, user_args=None):
         (options, args) = self.parse_args(user_args)
