@@ -24,7 +24,7 @@ from xml_exporter import xml_reporting
 import webbrowser
 
 # set to emit debug messages about errors (0 = off).
-DEBUG = 1
+DEBUG = 0
 
 class bc(object):
     """
@@ -209,14 +209,14 @@ class bc(object):
         Set urls to visit
         """
         if self.browser == "F": 
-            #sqlite operation to get the last visited url from history db.
+            # Sqlite operation to get the last visited url from history db.
             conn = sqlite3.connect(self.browser_history_path)
             c = conn.cursor()
             c.execute('select url, last_visit_date from moz_places ORDER BY last_visit_date DESC')
             url = c.fetchone()
-        elif self.browser == "C" or self.browser == "CHROMIUM": #Chrome/Chromium history database
-            #Hack that makes a copy of the locked database to access it while Chrome is running.
-            #Removes the copied database afterwards
+        elif self.browser == "C" or self.browser == "CHROMIUM": # Chrome/Chromium history database
+            # Hack that makes a copy of the locked database to access it while Chrome is running.
+            # Removes the copied database afterwards
             import filecmp # is this a standard module?
             a = self.browser_history_path + 'Copy'
             if os.path.exists(a):
@@ -489,8 +489,9 @@ class bc(object):
             print "Error: Browser is not responding correctly.\n"
 
         print '='*45 + "\n"
-        print "Status: Waiting for new urls ...\n"
-        print "Type 'Control+C' to exit...\n"
+        print "Status: Waiting for new urls\n"
+        print "Type 'Control+C' to exit.\n"
+        print '='*45 + "\n"
         # stay latent waiting for new urls
         while True:
             url = urlparse(self.getURL()).netloc
@@ -507,7 +508,7 @@ class bc(object):
                             os.remove('data.xml')  
                         open('data.xml', 'w') # starting a new xml data container in write mode
                         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-            time.sleep(5) # free process time 
+            time.sleep(5) # free process time or goodbye :-)       
 
 if __name__ == "__main__":
     app = bc()
