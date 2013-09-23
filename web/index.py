@@ -47,6 +47,7 @@ for counter in range(1, last_hop+1):
     timestamp_list.append(float(timestamp))
     country_code_list.append(country_code.encode('utf-8'))
 
+x = open('testmap.html','w')
 # HTML + JS container
 output = """
 <html>
@@ -54,12 +55,15 @@ output = """
   <title>Border Check - Web Visualizor</title>
   <link rel="stylesheet" href="js/leaflet/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="js/cluster/MarkerCluster.Default.css"/>
+  <link rel="stylesheet" href="js/cluster/MarkerCluster.css"/>
   <script src="js/leaflet/leaflet.js"></script>
   <script src="js/rlayer-modified.min.js"></script>
   <script src="js/raphael.js"></script>
   <script src="js/jquery-1.10.2.min.js"></script>
-  <script src="js/bc.js"></script>
+  <script src="js/bc2.js"></script>
   <script src="js/favicon.js"></script>
+  <script src="js/cluster/leaflet.markercluster.js"></script>
 
   <script type="text/javascript">
         $(document).ready (function(){
@@ -89,8 +93,8 @@ output = """
   </script>
 </html>
 """
-  #f.write(output)
-  #f.close
+x.write(output)
+x.close
 # except:
 #   output = """
 #   <html> loading </html>
