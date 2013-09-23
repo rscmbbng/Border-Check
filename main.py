@@ -506,20 +506,20 @@ class bc(object):
                 pass
             else:
                 traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-                # start web mode (on a different thread)
-                try:
-                    t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
-                    t.daemon = True
-                    t.start()
-                    time.sleep(2)
-                except (KeyboardInterrupt, SystemExit):
-                    t.join()
-                    sys.exit()
-                # open same browser of history access on a new tab
-                try:
-                    webbrowser.open('http://127.0.0.1:8080', new=1)
-                except:
-                    print "Error: Browser is not responding correctly.\n"
+            # start web mode (on a different thread)
+            try:
+                t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
+                t.daemon = True
+                t.start()
+                time.sleep(2)
+            except (KeyboardInterrupt, SystemExit):
+                t.join()
+                sys.exit()
+            # open same browser of history access on a new tab
+            try:
+                webbrowser.open('http://127.0.0.1:8080', new=1)
+            except:
+                print "Error: Browser is not responding correctly.\n"
 
         print('='*75)
         print(str(p.version))
