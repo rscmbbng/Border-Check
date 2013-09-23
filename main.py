@@ -538,15 +538,9 @@ class bc(object):
                 pass
             if url != self.old_url:
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
-                    print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
-                    print "URL:", self.url[0], "\n"
-                    print "Warning: This target is not valid!.\n"
                     pass
                 else:
                     if self.url[0].startswith('file://'):
-                        print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
-                        print "URL:", self.url[0], "\n"
-                        print "Warning: This target is not valid!.\n"
                         pass
                     else:
                         if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
