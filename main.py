@@ -526,7 +526,6 @@ class bc(object):
         print('='*75 + "\n")
         print "Status: Waiting for new urls ...\n"
         print "Type 'Control+C' to exit.\n"
-        print '='*45 + "\n"
         # stay latent waiting for new urls
         while True:
             url = urlparse(self.getURL()).netloc
@@ -554,6 +553,11 @@ class bc(object):
                             os.remove('data.xml')  
                         open('data.xml', 'w') # starting a new xml data container in write mode
                         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+                        # open same browser of history access on a new tab
+                        try:
+                            webbrowser.open('http://127.0.0.1:8080', new=0) # open on same tab?
+                        except:
+                            print "Error: Browser is not responding correctly.\n"
             time.sleep(5) # free process time or goodbye :-)       
 
 if __name__ == "__main__":
