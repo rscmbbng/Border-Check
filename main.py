@@ -24,7 +24,7 @@ from xml_exporter import xml_reporting
 import webbrowser
 
 # set to emit debug messages about errors (0 = off).
-DEBUG = 0
+DEBUG = 1
 
 class bc(object):
     """
@@ -96,7 +96,7 @@ class bc(object):
         try:
             return func(*args)
         except Exception as e:
-            print("[Error] - Something wrong fetching urls. Aborting..."), "\n"
+            print("\n[Error] - Something wrong fetching urls. Aborting..."), "\n"
             if DEBUG:
                 traceback.print_exc()
                 sys.exit(2)
@@ -204,13 +204,13 @@ class bc(object):
         print "Browser Options:\n" + '='*45 + "\n"
         if sys.platform.startswith('linux'):
             if self.browser == "F":
-                print "Currently used: Firefox\n"
+                print "Using: Firefox\n"
             if self.browser == "C":
-                print "Currently used: Chrome\n"
+                print "Using: Chrome\n"
             if self.browser == "CHROMIUM":
-                print "Currently used: Chromium\n"
+                print "Using: Chromium\n"
         else:
-            print "Currently used:", self.browser_path.split('/')[-1], "\n"
+            print "Using:", self.browser_path.split('/')[-1], "\n"
         if self.options.debug == True:
             if sys.platform == 'darwin':
                 if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
@@ -330,7 +330,7 @@ class bc(object):
         # Set the maxmind geo databases 
         self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
         self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
-        print '='*45 + "\n", "Status target:\n" + '='*45 + "\n"
+        print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
         print "URL:", self.url[0], "\n"
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         #url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
@@ -375,8 +375,8 @@ class bc(object):
                             latitude = str(record['latitude'])
                             self.latitude = latitude
                         except:
-                            self.longitude = '4.0'
-                            self.latitude = '40.0'
+                            self.longitude = '-'
+                            self.latitude = '-'
                         try:
                             if record.has_key('country_name') and record['city'] is not '':
                                 country = record['country_name']
@@ -405,6 +405,10 @@ class bc(object):
                         self.result_list.append(self.vardict)
                         xml_results = xml_reporting(self)
                         xml_results.print_xml_results('data.xml')
+                        if self.options.export_xml:
+                            open(self.options.export_xml, 'w') # starting a new xml data container in write mode
+                            xml_results.print_xml_results(self.options.export_xml)
+
             if self.options.debug == True:
                 logfile.close()
             self.old_url = url
@@ -490,28 +494,36 @@ class bc(object):
         match_ip = self.url[0].strip('http://').strip(':8080')
         #regex for filtering local network IPs
         if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://'):
+            print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+            print "URL:", self.url[0], "\n"
+            print "Warning: This target is not valid!.\n"
             pass
         else:
             if self.url[0].startswith('file://'):
+                print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                print "URL:", self.url[0], "\n"
+                print "Warning: This target is not valid!.\n"
                 pass
             else:
                 traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-        # start web mode (on a different thread)
-        try:
-            t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
-            t.daemon = True
-            t.start()
-            time.sleep(2)
-        except (KeyboardInterrupt, SystemExit):
-            t.join()
-            sys.exit()
-        # open same browser of history access on a new tab
-        try:
-            webbrowser.open('http://127.0.0.1:8080', new=1)
-        except:
-            print "Error: Browser is not responding correctly.\n"
+                # start web mode (on a different thread)
+                try:
+                    t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
+                    t.daemon = True
+                    t.start()
+                    time.sleep(2)
+                except (KeyboardInterrupt, SystemExit):
+                    t.join()
+                    sys.exit()
+                # open same browser of history access on a new tab
+                try:
+                    webbrowser.open('http://127.0.0.1:8080', new=1)
+                except:
+                    print "Error: Browser is not responding correctly.\n"
 
-        print '='*45 + "\n"
+        print('='*75)
+        print(str(p.version))
+        print('='*75 + "\n")
         print "Status: Waiting for new urls ...\n"
         print "Type 'Control+C' to exit.\n"
         print '='*45 + "\n"
@@ -519,12 +531,23 @@ class bc(object):
         while True:
             url = urlparse(self.getURL()).netloc
             #url = url.replace('www.','')
-            match_ip = url.strip('http://').strip(':8080')
+            try:
+                match_ip = url.strip('http://').strip(':8080')
+            except:
+                print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                print "URL:", self.url[0], "\n"
+                pass
             if url != self.old_url:
                 if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+                    print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                    print "URL:", self.url[0], "\n"
+                    print "Warning: This target is not valid!.\n"
                     pass
                 else:
                     if self.url[0].startswith('file://'):
+                        print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                        print "URL:", self.url[0], "\n"
+                        print "Warning: This target is not valid!.\n"
                         pass
                     else:
                         if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched

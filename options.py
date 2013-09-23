@@ -15,6 +15,8 @@ class BCOptions(optparse.OptionParser):
 
         self.add_option("-d", "--debug", action="store_true", dest="debug", help="debug mode")
         self.add_option("-b", action="store", dest="browser", help="set browser's history path")
+        #self.add_option("--proxy", action="store", dest="proxy", help="set proxy server")
+        self.add_option("--xml", action="store", dest="export_xml", help="export traces to xml (ex: --xml foo.xml)")
 
     def get_options(self, user_args=None):
         (options, args) = self.parse_args(user_args)
