@@ -26,30 +26,51 @@ window.onload = function () {
 
   //function chain for drawing the markers and lines on the map.
   
-  delay = (400+timestamp_list[index])
-  clusterGroup = new L.MarkerClusterGroup();
-  AddStep(latlong[index], latlong[index+1], index)
+  delay = (500+timestamp_list[index]) //sets the animationspeed
+  
+  clusterGroups = {} //contains all country specific clusters
+
+  makeClusterGroups(country_code_list, index) //initialize first cluster
+
+  AddStep(latlong[index], latlong[index+1], index) // initialize the animation
+
   
 
-  function AddMarkerCluster(marker, index){
-    clusterGroup.addLayer(marker)
+  function makeClusterGroups(country_code_list, index){
+    for (var i = 0; i < unique_country_code_list.length; i++){
+      if (unique_country_code_list[i] == country_code_list[index]){
+        if (clusterGroups[unique_country_code_list[i]]){
+          //checks if a cluster for the country already exists
+          return
+        }
+        else
+          //if not make it.
+          clusterGroups[unique_country_code_list[i]] = new L.MarkerClusterGroup();
+      }
+    }
   }
+
+  //console.log(clusterGroups)
+  function AddMarkerCluster(marker, index){
+    clusterGroups[country_code_list[index]].addLayer(marker)
+    map.addLayer(clusterGroups[country_code_list[index]])
+  }
+
   function AddMarker(src, index){
-  var marker = L.marker([src[0], src[1]])
-  var popup = L.Popup({
+    makeClusterGroups(country_code_list, index)
+    var marker = L.marker([src[0], src[1]])
+    var popup = L.Popup({
       maxHeight: 50})
-  var popupcontent = "<p>Hop no:"+hop_list[index]+"<br /><div id='metadata' $(this).hide()><button id='but'>show metadata</button><div id='metadata-content'>Server name:<br />"+server_name_list[index]+"<br />Network owner:<br />"+asn_list[index]+"</div></div>"
-  marker.bindPopup(popupcontent)
-  //marker.addTo(map).openPopup()
-   $('#metadata-content').hide()
-   AddMarkerCluster(marker)
-   map.addLayer(clusterGroup)
+    var popupcontent = "<p>Hop no:"+hop_list[index]+"<br /><div id='metadata' $(this).hide()><button id='but'>show metadata</button><div id='metadata-content'>Server name:<br />"+server_name_list[index]+"<br />Network owner:<br />"+asn_list[index]+"</div></div>"
+    marker.bindPopup(popupcontent)
+    AddMarkerCluster(marker, index)
   }
 
   function AddStep(src, dest, index){
   var b = new R.BezierAnim([src, dest], {})
   map.addLayer(b)
   AddMarker(src, index)
+  //console.log('AddStepp'+index)
   processStep(index)
   //console.log(delay)
   }
@@ -61,7 +82,9 @@ window.onload = function () {
       changeFavicon('js/world/'+country_code_list[index]+'.png')
       window.setTimeout(function () {
       AddStep(latlong[index], latlong[index+1], index)
+      //console.log('processStep')
      }, delay);}
+
     else
     if (index < counter_max-1){
     //console.log('hop#', hop_list[index])
@@ -75,11 +98,10 @@ window.onload = function () {
       changeFavicon('js/world/'+country_code_list[index]+'.png')
       //console.log('fin')
       //map.fitBounds([bounds])
-      
     }
 
     index = index + 1
-    delay = (400 + timestamp_list[index])
+    delay = (500 + timestamp_list[index])
     }
 $('.leaflet-marker-icon').bind('click', function(){
   console.log('clickkkk')

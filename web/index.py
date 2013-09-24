@@ -47,6 +47,8 @@ for counter in range(1, last_hop+1):
     timestamp_list.append(float(timestamp))
     country_code_list.append(country_code.encode('utf-8'))
 
+unique_country_code_list = set(country_code_list)
+
 x = open('testmap.html','w')
 # HTML + JS container
 output = """
@@ -61,7 +63,7 @@ output = """
   <script src="js/rlayer-modified.min.js"></script>
   <script src="js/raphael.js"></script>
   <script src="js/jquery-1.10.2.min.js"></script>
-  <script src="js/bc2.js"></script>
+  <script src="js/bc.js"></script>
   <script src="js/favicon.js"></script>
   <script src="js/cluster/leaflet.markercluster.js"></script>
 
@@ -90,6 +92,7 @@ output = """
   server_name_list = """+str(server_name_list)+"""
   timestamp_list = """+str(timestamp_list)+"""
   country_code_list = """+str(country_code_list)+"""
+  unique_country_code_list = """+str(list(unique_country_code_list))+"""
   </script>
 </html>
 """
