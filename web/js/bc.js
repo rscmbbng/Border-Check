@@ -79,7 +79,7 @@ window.onload = function () {
     map.panTo(latlong[index]);
     if (index < counter_max-2) {
       //console.log('hop#', hop_list[index])
-      changeFavicon('js/world/'+country_code_list[index]+'.png')
+      changeFavicon('images/world/'+country_code_list[index]+'.png')
       window.setTimeout(function () {
       AddStep(latlong[index], latlong[index+1], index)
       //console.log('processStep')
@@ -88,14 +88,14 @@ window.onload = function () {
     else
     if (index < counter_max-1){
     //console.log('hop#', hop_list[index])
-    changeFavicon('js/world/'+country_code_list[index]+'.png')
+    changeFavicon('images/world/'+country_code_list[index]+'.png')
       window.setTimeout(function () {
       AddStep(latlong[index], latlong[index], index)
      }, delay);}
 
     else
     if (index = counter_max-1){
-      changeFavicon('js/world/'+country_code_list[index]+'.png')
+      changeFavicon('images/world/'+country_code_list[index]+'.png')
       //console.log('fin')
       //map.fitBounds([bounds])
     }
