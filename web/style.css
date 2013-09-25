@@ -47,11 +47,12 @@ body{
 	height:100%;
 	position:absolute;
 	background-color: white;
-	-webkit-box-shadow:  12px 0px 8px -5px rgba(0, 0, 0, 0.5);
-    box-shadow:  12px 0px 8px -5px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow:  12px 0px 8px 4px rgba(0, 0, 0, 0.5);
+    box-shadow:  12px 0px 8px 4px rgba(0, 0, 0, 0.5);
+    overflow: auto;
 }
 #button{
-	z-index:3;
+	z-index:4;
 	float:right;
 	width: 10px;
 	height: 90%;
@@ -61,19 +62,28 @@ body{
 }
 
 .info{
+	z-index: 3;
+	width:250;
+	position: absolute;
+	top: 0px;
 	z-index: 4;
 	color:black;
 	padding: 15px;
 	float: left;
 	overflow: auto;
+	
 
 }
 .info img{
 	top :0px;
 }
+.info p {
+	overflow: auto;
+}
 .info #info-text{
-	text-align: center;
+	text-align: justify;
 	height:inherit;
+	overflow: auto;
 
 }
 
