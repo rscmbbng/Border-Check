@@ -26,7 +26,7 @@ timestamp_list = []
 last_hop = int(xml.findall('hop')[-1].text)
 country_code_list = []
 
-for counter in range(1, last_hop+1):
+for counter in range(0, last_hop+1):
     url = xml.getroot().text
     hop_element = parseString(dom.getElementsByTagName('hop')[counter].toxml().encode('utf-8'))
     hop = xml.findall('hop')[counter].text
@@ -60,7 +60,7 @@ output = """
   <link rel="stylesheet" href="js/cluster/MarkerCluster.Default.css"/>
   <link rel="stylesheet" href="js/cluster/MarkerCluster.css"/>
   <script src="js/leaflet/leaflet.js"></script>
-  <script src="js/rlayer-modified.min.js"></script>
+  <script src="js/rlayer-src.js"></script>
   <script src="js/raphael.js"></script>
   <script src="js/jquery-1.10.2.min.js"></script>
   <script src="js/bc.js"></script>
@@ -79,9 +79,19 @@ output = """
 </head>
 <body>
   <div id="wrapper">
-      <div id="header">"""+url+"""</div>
+      <div class="header">Travelling to:</div>
+      <div class ="header" id="url">"""+url+"""</div>
       <div id="map" style="width: 100%; height: 100%"></div>
-      <div id="bar"><button id='button'><</button></div>
+      <div class ="bar">
+      <div id="button"> > </div>
+      <div class = info>
+      <div> <img src='images/bclogo.png'></img></div>
+      <div id='info-text'> for some reason if the text is tooo<br /> wide/long nothing appears here..fucking black magicfor some reason if the text is tooofor some reason if the text is tooo
+      <div>
+      </div>
+      </div>
+      </div>
+      
   </div>
 <script type="text/javascript">
   hop_list = """+str(hop_list)+"""

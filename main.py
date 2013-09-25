@@ -322,6 +322,9 @@ class bc(object):
             if self.options.debug == True:
                 print 'Target open, with results \n'
             return
+        if '[prohibited]' in output[-1]:
+            if self.options.debug == True:
+                print 'prohibited'
 
     def traces(self):
         '''
@@ -345,7 +348,7 @@ class bc(object):
             self.lft()
             if self.options.debug == True:
                 logfile = open('tracelogfile', 'a')
-                thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url[0], "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
+                thingstolog = ['='*45 + "\n", "Browser: ", self.browser_path.split('/')[-1], "\n", "Version: ", self.browser_version, "\n", "Path to browser: ", self.browser_path, "\n", "History db: ", self.browser_history_path, "\n","URL: ", self.url, "\n", "Host: ",url, "\n", "Host ip: ", url_ip, "\n", '='*45, "\n"]
                 for item in thingstolog:
                     logfile.write(item)
             print '='*45 + "\n" + "Packages Route:\n" + '='*45
@@ -357,57 +360,61 @@ class bc(object):
                 for ip in line:
                     if re.match(r'\d{1,4}\.\dms$', ip):
                         self.timestamp = ip.replace('ms', '')
-                    if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
-                        self.hop_ip = ip
-                        record = self.geoip.record_by_addr(ip)
-                        try:
-                            self.asn = self.geoasn.org_by_addr(ip)
-                        except:
-                            self.asn = 'No ASN provided'
-                        #print record
-                        try:
-                            self.hop_host_name = socket.gethostbyaddr(ip)[0]
-                        except:
-                            self.hop_host_name = 'No hostname'
-                        try:
-                            longitude = str(record['longitude'])
-                            self.longitude = longitude
-                            latitude = str(record['latitude'])
-                            self.latitude = latitude
-                        except:
-                            self.longitude = '-'
-                            self.latitude = '-'
-                        try:
-                            if record.has_key('country_name') and record['city'] is not '':
-                                country = record['country_name']
-                                city = record['city']
-                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
-                                #self.hop_count +=1
-                                self.city = city
-                                self.country = country
-                                self.server_name = self.hop_host_name
-                                cc = record['country_code'].lower()
-                            elif record.has_key('country_name'):
-                                country = record['country_name']
-                                print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
-                                self.country = country
-                                self.city = '-'
-                                self.server_name = self.hop_host_name
-                                cc = record['country_code'].lower()
-                                #self.hop_count+=1
-                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp, 'country_code': cc  }
-                        except:
-                            print "Trace:", self.hop_count, "->", "Not allowed"
-                            self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp, 'country_code': '-' }
+                    if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', ip):
+                        pass
+                    else:    
+                        if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
+                            self.hop_ip = ip
+                            record = self.geoip.record_by_addr(ip)
+                            try:
+                                self.asn = self.geoasn.org_by_addr(ip)
+                            except:
+                                self.asn = 'No ASN provided'
+                            #print record
+                            try:
+                                self.hop_host_name = socket.gethostbyaddr(ip)[0]
+                            except:
+                                self.hop_host_name = 'No hostname'
+                            try:
+                                longitude = str(record['longitude'])
+                                self.longitude = longitude
+                                latitude = str(record['latitude'])
+                                self.latitude = latitude
+                            except:
+                                self.longitude = '-'
+                                self.latitude = '-'
+                            try:
+                                if record.has_key('country_name') and record['city'] is not '':
+                                    country = record['country_name']
+                                    city = record['city']
+                                    print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", city, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
+                                    #self.hop_count +=1
+                                    self.city = city
+                                    self.country = country
+                                    self.server_name = self.hop_host_name
+                                    cc = record['country_code'].lower()
+                                elif record.has_key('country_name'):
+                                    country = record['country_name']
+                                    print "Trace:", self.hop_count, "->", ip, "->", longitude + ":" + latitude, "->", country, "->", self.hop_host_name, "->", self.asn, '->', self.timestamp+'ms'
+                                    self.country = country
+                                    self.city = '-'
+                                    self.server_name = self.hop_host_name
+                                    cc = record['country_code'].lower()
+                                    #self.hop_count+=1
+                                self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': self.country, 'city': self.city, 'longitude': self.longitude, 'latitude': self.latitude, 'asn' : self.asn, 'timestamp' : self.timestamp, 'country_code': cc  }
+                            except:
+                                #pass
+                                print "Trace:", self.hop_count, "->", "Not allowed", ip
+                                self.vardict = {'url': self.url, 'destination_ip': self.destination_ip, 'hop_count': self.hop_count,'hop_ip': self.hop_ip, 'server_name': self.server_name, 'country': '-', 'city': '-', 'longitude': '-', 'latitude': '-', 'asn' : self.asn, 'timestamp' : self.timestamp, 'country_code': '-' }
 
-                        self.hop_count+=1
-                        # write xml data to file
-                        self.result_list.append(self.vardict)
-                        xml_results = xml_reporting(self)
-                        xml_results.print_xml_results('data.xml')
-                        if self.options.export_xml:
-                            open(self.options.export_xml, 'w') # starting a new xml data container in write mode
-                            xml_results.print_xml_results(self.options.export_xml)
+                            self.hop_count+=1
+                            # write xml data to file
+                            self.result_list.append(self.vardict)
+                            xml_results = xml_reporting(self)
+                            xml_results.print_xml_results('data.xml')
+                            if self.options.export_xml:
+                                open(self.options.export_xml, 'w') # starting a new xml data container in write mode
+                                xml_results.print_xml_results(self.options.export_xml)
 
             if self.options.debug == True:
                 logfile.close()
@@ -493,7 +500,7 @@ class bc(object):
         # run traceroutes
         match_ip = self.url[0].strip('http://').strip(':8080')
         #regex for filtering local network IPs
-        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://'):
+        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://'):
             print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
             print "URL:", self.url[0], "\n"
             print "Warning: This target is not valid!.\n"
@@ -507,14 +514,14 @@ class bc(object):
             else:
                 traces = self.try_running(self.traces, "\nInternal error tracerouting.")
             # start web mode (on a different thread)
-            try:
-                t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
-                t.daemon = True
-                t.start()
-                time.sleep(2)
-            except (KeyboardInterrupt, SystemExit):
-                t.join()
-                sys.exit()
+        try:
+            t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
+            t.daemon = True
+            t.start()
+            time.sleep(2)
+        except (KeyboardInterrupt, SystemExit):
+            t.join()
+            sys.exit()
             # open same browser of history access on a new tab
             try:
                 webbrowser.open('http://127.0.0.1:8080', new=1)
@@ -537,7 +544,7 @@ class bc(object):
                 print "URL:", self.url[0], "\n"
                 pass
             if url != self.old_url:
-                if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+                if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
                     pass
                 else:
                     if self.url[0].startswith('file://'):

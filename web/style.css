@@ -1,13 +1,36 @@
-#header{
-	top:40px;
-	width: 100%;
+@font-face {
+    font-family: "SourceSansPro-Regular";
+    src: url('fonts/SourceSansPro-Regular.otf') format("truetype");
+}
+
+@font-face {
+    font-family: "SourceSansPro-Bold";
+    src: url('fonts/SourceSansPro-Bold.otf') format("truetype");
+}
+body{
+	font-family: 'SourceSansPro-Regular', Arial, serif;
+	font-size: 10px;
+}
+.header{
+	top:35px;
+	width: inherit;
 	height: 10px;
 	position: absolute;
 	z-index: 3;
-	color:red;
 	text-align: center;
-
+	color:white;
+	font-size: 12;
+	text-shadow: 0px 2px 3px rgba(150, 150, 150, 1)
 }
+
+#url{
+	top:50px;
+	font-size: 30px;
+	color:white;
+	font-family: 'SourceSansPro-Bold';
+	text-shadow: 0px 2px 3px rgba(150, 150, 150, 1)
+}
+
 #map {
  z-index:1;
  top: 0px;
@@ -16,20 +39,41 @@
 }
 
 
-#bar{
+.bar{
 	z-index:2;
 	top:0px;
-	right:0px;
-	width:50px;
+	left:0px;
+	width:20px;
 	height:100%;
-	position:fixed;
+	position:absolute;
 	background-color: white;
-	border-left: 1px black solid;
+	-webkit-box-shadow:  12px 0px 8px -5px rgba(0, 0, 0, 0.5);
+    box-shadow:  12px 0px 8px -5px rgba(0, 0, 0, 0.5);
+}
+#button{
+	z-index:3;
+	float:right;
+	width: 10px;
+	height: 90%;
+	padding: 5px;
+	font-size: 20px;
+
 }
 
+.info{
+	z-index: 4;
+	color:black;
+	padding: 15px;
+	float: left;
+	overflow: auto;
 
-#info{
-	color:red;
+}
+.info img{
+	top :0px;
+}
+.info #info-text{
+	text-align: center;
+	height:inherit;
 
 }
 
