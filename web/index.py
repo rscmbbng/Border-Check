@@ -54,7 +54,7 @@ x = open('testmap.html','w')
 output = """
 <html>
 <head>
-  <title>Border Check - Web Visualizor</title>
+  <title>Border Check - Web Viewer</title>
   <link rel="stylesheet" href="js/leaflet/leaflet.css" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="js/cluster/MarkerCluster.Default.css"/>
