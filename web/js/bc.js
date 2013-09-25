@@ -17,13 +17,7 @@ window.onload = function () {
     ).addTo(map)
 
   //custom markers:
-  var customIcon = L.icon({
-    iconUrl: 'images/marker-icon.png',
 
-    iconSize:     [20, 20], // size of the icon
-    iconAnchor:   [10, 10], // point of the icon which will correspond to marker's location
-    popupAnchor:  [-200, 200] // point from which the popup should open relative to the iconAnchor
-});
 
 
 
@@ -61,6 +55,16 @@ window.onload = function () {
 
   AddStep(latlong[index], latlong[index+1], index) // initialize the animation
 
+  function makeCustomMarker(index){
+    var customIcon = new L.icon({
+    iconUrl: 'images/markers/marker-icon-'+index+'.png',
+
+    iconSize:     [30, 30], // size of the icon
+    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-200, 200] // point from which the popup should open relative to the iconAnchor
+    });
+    return customIcon
+  }
   
 
   function makeClusterGroups(country_code_list, index){
@@ -85,7 +89,8 @@ window.onload = function () {
 
   function AddMarker(src, index){
     makeClusterGroups(country_code_list, index)
-    var marker = L.marker([src[0], src[1]],{icon: customIcon})
+    console.log(index)
+    var marker = L.marker([src[0], src[1]],{icon: makeCustomMarker(index)})
     var popup = L.Popup({
       maxHeight: 50})
     var popupcontent = "<p>Hop no:"+hop_list[index]+"<br />Server name:<br />"+server_name_list[index]+"<br />Network owner:<br />"+asn_list[index]+"</p>"
