@@ -133,7 +133,7 @@ class bc(object):
                                     pass
                                 latest_subdir = max(all_subdirs, key=os.path.getmtime)
                                 osx_profile = os.path.join(f_his_osx, latest_subdir)
-                                if self.options.browser_history_history: # if exists, extract user browser's history path
+                                if self.options.browser_history: # if exists, extract user browser's history path
                                     self.browser_history_path = self.options.browser_history
                                 else:
                                     self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
