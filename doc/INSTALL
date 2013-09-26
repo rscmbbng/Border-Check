@@ -1,0 +1,85 @@
+========================================================
+BC - Border Check - 2013/2014
+========================================================
+
+Border Check (BC) is a browser extension that illustrates the physical and political realities of the internet's infrastructure using free software tools.
+
+As one surfs the net, data packets are sent from the user's computer to the target server. These data packets go on a journey hopping from server to server, potentially crossing multiple countries, until the packets reach the desired website. In each of the countries that are passed different laws and practices can apply to the data, influencing whether or not authorities can inspect, store or modify that data.
+
+In realtime BC lets you know which countries you surf through as you browse the web. Additionally BC will illustrate this process on a world map and (where available) provide you with contextualizing information on that country's laws and practices regarding your data.
+
+==========================
+INSTALL:
+===================
+
+BC runs on OSx and Unix systems. It requires the following libraries/dependencies:
+
+===================
+    + Python:
+===================
+
+        - python-geoip - Python bindings for the GeoIP IP-to-country resolver library
+
+               https://pypi.python.org/pypi/pygeoip/0.2.7
+
+        - python-lxml - pythonic binding for the libxml2 and libxslt libraries
+
+               https://pypi.python.org/pypi/lxml/3.2.3
+
+                       * On Debian-based systems (ex: Ubuntu), run: 
+
+                              sudo apt-get install python-geoip python-lxml
+        - biplist:
+               https://pypi.python.org/pypi/biplist/0.5
+
+===================
+    + Javascript:
+===================
+
+        - leaflet.js
+
+               http://leafletjs.com
+
+        - leaflet.markercluster.js
+
+               https://github.com/Leaflet/Leaflet.markercluster
+
+        - jquery.js
+
+               http://www.jquery.com
+
+        - rlayer.js
+
+               http://dynmeth.github.io/RaphaelLayer/
+
+        - raphael.js
+
+               http://raphaeljs.com/
+
+        - favicon.js
+
+               https://gist.github.com/mathiasbynens/428626
+
+===================
+    + LFT:
+===================
+        - LFT 3.35 (tracerouter)
+
+               http://pwhois.org/lft/
+
+===================
+    + Databases:
+===================
+        - Maxmind GeoIPLite and GeoIPASNum:
+          
+               http://dev.maxmind.com/geoip/legacy/geolite/
+
+===================
+
+Please report any problems you encounter using/installing Border Check to:
+
+ - Roel Roscam Abbing (roel@roelroscamabbing.nl)
+ - psy (epsylon@riseup.net)
+
+=========
+
