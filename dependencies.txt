@@ -1,0 +1,44 @@
+Border Check dependencies/libs used
+
+Python:
+pygeoip
+https://pypi.python.org/pypi/pygeoip/0.2.7
+
+lxml
+https://pypi.python.org/pypi/lxml/3.2.3
+
+biplist
+https://pypi.python.org/pypi/biplist/0.5
+
+======
+LFT 3.35
+http://pwhois.org/lft/
+
+======
+Databases:
+	
+Maxmind GeoIPLite and GeoIPASNum
+http://dev.maxmind.com/geoip/legacy/geolite/
+
+======
+Javascript:
+
+leaflet.js
+http://leafletjs.com
+
+leaflet.markercluster.js
+https://github.com/Leaflet/Leaflet.markercluster
+
+jquery.js
+http://www.jquery.com
+
+rlayer.js
+http://dynmeth.github.io/RaphaelLayer/
+
+raphael.js
+http://raphaeljs.com/
+
+favicon.js
+https://gist.github.com/mathiasbynens/428626
+
+
