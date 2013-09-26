@@ -41,6 +41,7 @@ for counter in range(0, last_hop+1):
     latlong = [float(latitude.encode('utf-8')), float(longitude.encode('utf-8'))]
     geoarray.append(latlong)
     asn_list.append(asn.encode('utf-8'))
+    hop = int(hop) +1
     hop_list.append(str(hop))
     hop_ip_list.append(hop_ip.encode('utf-8'))
     server_name_list.append(server_name.encode('utf-8'))
@@ -65,7 +66,8 @@ output = """
   <script src="js/jquery-1.10.2.min.js"></script>
   <script src="js/bc.js"></script>
   <script src="js/favicon.js"></script>
-  <script src="js/cluster/leaflet.markercluster.js"></script>
+  <script src="js/cluster/leaflet.markercluster-src.js"></script>
+
 
   <script type="text/javascript">
         $(document).ready (function(){
@@ -86,7 +88,7 @@ output = """
       <div id="button"> > </div>
       <div class = info>
       <div> <img src='images/bclogo.png'></img></div>
-      <div id='info-text'><p>Border Check (BC) is a browser extension that illustrates the physical and political realities of the internet's infrastructure using free software tools.</p>
+      <div id='info-text'><p>Border Check (BC) allows you to see all the servers you visit while you browse to a specific website.</p>
       <p>As one surfs the net, data packets are sent from the user's computer to the target server. These data packets go on a journey hopping from server to server, potentially crossing multiple countries, until the packets reach the desired website. In each of the countries that are passed different laws and practices can apply to the data, influencing whether or not authorities can inspect, store or modify that data.</p>
       <p>In realtime BC lets you know which countries you surf through as you browse the web. Additionally BC will illustrate this process on a world map and (where available) provide you with contextualizing information on that country's laws and practices regarding your data.</p>
       <p>Currently supporting the following browsers on OSX and Unix systems: <br /> Firefox, Chromium, Chrome, Safari</p>

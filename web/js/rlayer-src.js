@@ -373,7 +373,7 @@ R.BezierAnim = R.Layer.extend({
 			.attr({
 				'stroke': '#BE1E2D',
 				'alongBezier': 0,
-				'stroke-width': 1
+				'stroke-width': 2
 			});
 
 		sub.stop().animate({

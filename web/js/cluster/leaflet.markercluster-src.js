@@ -581,7 +581,7 @@ L.MarkerClusterGroup = L.FeatureGroup.extend({
 
 		//Show convex hull (boundary) polygon on mouse over
 		if (showCoverageOnHover) {
-			this.on('clustermouseover', this._showCoverage, this);
+			this.on('clustermouseover', this._hideCoverage, this);
 			this.on('clustermouseout', this._hideCoverage, this);
 			map.on('zoomend', this._hideCoverage, this);
 			map.on('layerremove', this._hideCoverageOnRemove, this);
@@ -1723,7 +1723,7 @@ L.MarkerCluster.include(!L.DomUtil.TRANSITION ? {
 			map.addLayer(leg);
 			m._spiderLeg = leg;
 		}
-		this.setOpacity(0.3);
+		this.setOpacity(0);
 		group.fire('spiderfied');
 	},
 
@@ -1765,7 +1765,7 @@ L.MarkerCluster.include(!L.DomUtil.TRANSITION ? {
 		group._forceLayout();
 		group._animationStart();
 
-		var initialLegOpacity = L.Path.SVG ? 0 : 0.3,
+		var initialLegOpacity = L.Path.SVG ? 0 : 0,
 			xmlns = L.Path.SVG_NS;
 
 
@@ -1783,7 +1783,7 @@ L.MarkerCluster.include(!L.DomUtil.TRANSITION ? {
 
 
 			//Add Legs.
-			leg = new L.Polyline([me._latlng, newPos], { weight: 1.5, color: '#222', opacity: initialLegOpacity });
+			leg = new L.Polyline([me._latlng, newPos], { weight: 1.5, color: '#222', opacity: 0 });
 			map.addLayer(leg);
 			m._spiderLeg = leg;
 
@@ -1815,12 +1815,12 @@ L.MarkerCluster.include(!L.DomUtil.TRANSITION ? {
 			anim.setAttribute("attributeName", "stroke-opacity");
 			anim.setAttribute("begin", "indefinite");
 			anim.setAttribute("from", 0);
-			anim.setAttribute("to", 0.5);
+			anim.setAttribute("to", 0);
 			anim.setAttribute("dur", 0.25);
 			leg._path.appendChild(anim);
 			anim.beginElement();
 		}
-		me.setOpacity(0.3);
+		me.setOpacity(0);
 
 		//Set the opacity of the spiderLegs back to their correct value
 		// The animations above override this until they complete.
@@ -1831,8 +1831,8 @@ L.MarkerCluster.include(!L.DomUtil.TRANSITION ? {
 			for (i = childMarkers.length - 1; i >= 0; i--) {
 				m = childMarkers[i]._spiderLeg;
 
-				m.options.opacity = 0.5;
-				m._path.setAttribute('stroke-opacity', 0.5);
+				m.options.opacity = 0;
+				m._path.setAttribute('stroke-opacity', 0);
 			}
 		}
 
@@ -1882,7 +1882,7 @@ L.MarkerCluster.include(!L.DomUtil.TRANSITION ? {
 				a.beginElement();
 
 				a = m._spiderLeg._path.childNodes[1];
-				a.setAttribute('from', 0.5);
+				a.setAttribute('from', 0);
 				a.setAttribute('to', 0);
 				a.setAttribute('stroke-opacity', 0);
 				a.beginElement();

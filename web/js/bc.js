@@ -1,17 +1,29 @@
 window.onload = function () {
   index = 0
+  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.kaart-drie/{z}/{x}/{y}.png')
+  blank_map = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.blank-populations/{z}/{x}/{y}.png')
+  osm =   L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+  })
   var map = L.map('map',{
       minZoom: 2,
       maxZoom:6,
-      zoomControl:false
+      zoomControl:false,
+      layers: [osm, cables, blank_map]
 
-      }).setView(latlong[index], 4);
+      }).setView(latlong[index], 3);
 
-  L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
+  blank_map.addTo(map)
 
-  //setting the controls:
+  var baseMaps = {
+    "Submarine cables": cables,
+    "OSM default": osm,
+    "Blank map": blank_map
+  }
+
+
+ //setting the controls:
+  new L.control.layers(baseMaps, null, {collapsed:false}).addTo(map)
   new L.Control.Zoom({
     position: 'topright'}
     ).addTo(map)
@@ -59,9 +71,9 @@ window.onload = function () {
     var customIcon = new L.icon({
     iconUrl: 'images/markers/marker-icon-'+index+'.png',
 
-    iconSize:     [30, 30], // size of the icon
-    iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
-    popupAnchor:  [-200, 200] // point from which the popup should open relative to the iconAnchor
+    iconSize:     [20, 20], // size of the icon
+    iconAnchor:   [10, 10], // point of the icon which will correspond to marker's location
+    popupAnchor:  [-150, 0] // point from which the popup should open relative to the iconAnchor
     });
     return customIcon
   }
