@@ -63,6 +63,7 @@ BC runs on OSx and Unix systems. It requires the following libraries/dependencie
 ===================
     + LFT:
 ===================
+
         - LFT 3.35 (tracerouter)
 
                http://pwhois.org/lft/
@@ -70,6 +71,7 @@ BC runs on OSx and Unix systems. It requires the following libraries/dependencie
 ===================
     + Databases:
 ===================
+
         - Maxmind GeoIPLite and GeoIPASNum:
           
                http://dev.maxmind.com/geoip/legacy/geolite/
@@ -80,6 +82,11 @@ Please report any problems you encounter using/installing Border Check to:
 
  - Roel Roscam Abbing (roel@roelroscamabbing.nl)
  - psy (epsylon@riseup.net)
+
+Or visit IRC Community:
+
+ - Server: irc.freenode.net 
+ - Channel: #BorderCheck
 
 =========
 
