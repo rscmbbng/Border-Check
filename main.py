@@ -272,13 +272,18 @@ class bc(object):
         """
         #try:
         if self.operating_system == 'darwin':
-            self.content = subprocess.check_output(['lft', self.method, '-n', '-S', self.destination_ip])
+            try:
+                self.content = subprocess.check_output(['lft', self.method, '-n', '-S', self.destination_ip])
+            except:
+                a = subprocess.Popen(['lft', self.method, '-S', '-n', self.destination_ip], stdout=subprocess.PIPE)
+                self.content = a.stdout.read()
+
         if self.operating_system == 'linux':
             if self.method == '-e':
                 self.method = '-E'
             try:
                 self.content = subprocess.check_output(['lft', '-S', '-n', self.destination_ip])
-                # support for older python versions (<2.7) that don't support subprocess.check_output
+                # support for older python versions (<2.75) that don't support subprocess.check_output
             except:
                 a = subprocess.Popen(['lft', '-S', '-n', self.destination_ip], stdout=subprocess.PIPE)
                 self.content = a.stdout.read()
