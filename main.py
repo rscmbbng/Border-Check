@@ -38,7 +38,7 @@ class bc(object):
 
         # check_browser():
         self.operating_system = '' #The operating system being used. Either darwin/linux
-        self.browser = "" # "F" Firefox / "C" Chrome
+        self.browser = "" # "F" Firefox / "C" Chrome / "S" Safari / "CHROMIUM" Chromium
         self.browser_path = "" #the path to the browser application
         self.browser_history_path = "" # the path to the browser history file
         self.browser_version = "" # the version of the browser
@@ -112,96 +112,252 @@ class bc(object):
         """
         Check browsers used by system
         """
-        if sys.platform == 'darwin':
-            self.operating_system = 'darwin'
-            # paths to the browsing history db's 
-            f_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
-            c_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
-            chromium_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
-            s_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
-            # path to the browser executables
-            f_osx = '/Applications/Firefox.app/Contents/MacOS/firefox' 
-            c_osx = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-            chromium_osx = '/Applications/Chromium.app/Contents/MacOS/Chromium'
-            s_osx = '/Applications/Safari.app/Contents/MacOS/Safari'
-            try:
-                if os.path.exists(f_his_osx):
-                    if len(os.listdir(f_his_osx)) > 2:
-                        print 'You have multiple profiles, choosing the last one used'
-                        #filter to use the directory that was last modified.
-                        all_subdirs = [os.path.join(f_his_osx,d)for d in os.listdir(f_his_osx)]
-                        try:
-                            all_subdirs.remove(os.path.join(f_his_osx,'.DS_Store')) #throwing out .DS_store
-                        except:
-                            pass
-                        latest_subdir = max(all_subdirs, key=os.path.getmtime)
-                        osx_profile = os.path.join(f_his_osx, latest_subdir)
-                        if self.options.browser: # if exists, extract user browser's history path
-                            self.browser_history_path = self.options.browser
-                        else:
-                            self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
-                    else:
-                        for folder in os.listdir(f_his_osx):
-                            if folder.endswith('.default'):
-                                osx_default = os.path.join(f_his_osx, folder)
-                                if self.options.browser: # if exists, extract user browser's history path
-                                    self.browser_history_path = self.options.browser
-                                else:
-                                    self.browser_history_path = os.path.join(osx_default, 'places.sqlite')
-                    self.browser = "F"
-                    self.browser_path = f_osx
-                elif os.path.exists(c_his_osx):
-                    self.browser = "C"
-                    if self.options.browser: # if exists, extract user browser's history path
-                        self.browser_history_path = self.options.browser
-                    else:
-                        self.browser_history_path = c_his_osx
-                    self.browser_path = c_osx
-                elif os.path.exists(chromium_his_osx):
-                    self.browser = "CHROMIUM"
-                    if self.options.browser: # if exists, extract user browser's history path
-                        self.browser_history_path = self.options.browser
-                    else:
-                        self.browser_history_path = chromium_his_osx
-                    self.browser_path = chromium_osx
-                elif os.path.exists(s_his_osx):
-                    self.browser = "S"
-                    if self.options.browser: # if exists, extract user browser's history path
-                        self.browser_history_path = self.options.browser
-                    else:
-                        self.browser_history_path = s_his_osx
-                    self.browser_path = s_osx
-            except:
-                print "Warning: None of the currently supported browsers (Firefox, Chrome, Chromium, Safari) are installed."
-
-        elif sys.platform.startswith('linux'):
-            self.operating_system = 'linux'
-            f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
-            c_lin = os.path.join(os.path.expanduser('~'), '.config/google-chrome/History')
-            chromium_lin = os.path.join(os.path.expanduser('~'), '.config/chromium/Default/History')
-            if os.path.exists(f_lin):
-                #missing multiple profile support
-                for folder in os.listdir(f_lin):
-                    if folder.endswith('.default'):
-                        lin_default = os.path.join(f_lin, folder)
-                        if self.options.browser: # if exists, extract user browser's history path
-                            self.browser_history_path = self.options.browser
-                        else:
-                            self.browser_history_path = os.path.join(lin_default, 'places.sqlite')
-                        self.browser = "F"
-            elif os.path.exists(c_lin):
-                self.browser = "C"
-                if self.options.browser: # if exists, extract user browser's history path
-                    self.browser_history_path = self.options.browser
-                else:
-                    self.browser_history_path = c_lin
-            elif os.path.exists(chromium_lin):
-                self.browser = "CHROMIUM"
-                if self.options.browser: # if exists, extract user browser's history path
-                    self.browser_history_path = self.options.browser
-                else:
-                    self.browser_history_path = chromium_lin
         print "Browser Options:\n" + '='*45 + "\n"
+
+        # make browser set manually by user
+        if self.options.browser:
+            if self.options.browser == "F" or self.options.browser == "f": # Firefox
+                if sys.platform == 'darwin': # on darwin
+                    self.operating_system = 'darwin'
+                    f_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
+                    f_osx = '/Applications/Firefox.app/Contents/MacOS/firefox' 
+                    try:
+                        if os.path.exists(f_his_osx):
+                            if len(os.listdir(f_his_osx)) > 2:
+                                print 'You have multiple profiles, choosing the last one used'
+                                # filter to use the directory that was last modified.
+                                all_subdirs = [os.path.join(f_his_osx,d)for d in os.listdir(f_his_osx)]
+                                try:
+                                    all_subdirs.remove(os.path.join(f_his_osx,'.DS_Store')) # throwing out .DS_store
+                                except:
+                                    pass
+                                latest_subdir = max(all_subdirs, key=os.path.getmtime)
+                                osx_profile = os.path.join(f_his_osx, latest_subdir)
+                                if self.options.browser_history_history: # if exists, extract user browser's history path
+                                    self.browser_history_path = self.options.browser_history
+                                else:
+                                    self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
+                            else:
+                                for folder in os.listdir(f_his_osx):
+                                    if folder.endswith('.default'):
+                                        osx_default = os.path.join(f_his_osx, folder)
+                                        if self.options.browser_history: # if exists, extract user browser's history path
+                                            self.browser_history_path = self.options.browser_history
+                                        else:
+                                            self.browser_history_path = os.path.join(osx_default, 'places.sqlite')
+                            self.browser = "F"
+                            self.browser_path = f_osx
+                    except:
+                        print "Warning: Firefox hasn't been detected on your Darwin system.\n"
+                        sys.exit(2)
+                elif sys.platform.startswith('linux'): # on unix
+                    self.operating_system = 'linux'
+                    f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
+                    if os.path.exists(f_lin):
+                        #missing multiple profile support
+                        for folder in os.listdir(f_lin):
+                            if folder.endswith('.default'):
+                                lin_default = os.path.join(f_lin, folder)
+                                if self.options.browser_history: # if exists, extract user browser's history path
+                                    self.browser_history_path = self.options.browser_history
+                                else:
+                                    self.browser_history_path = os.path.join(lin_default, 'places.sqlite')
+                                self.browser = "F"
+                    else:
+                        print "Warning: Firefox hasn't been detected on your Unix system.\n"
+                        sys.exit(2)
+                else:
+                    print "Warning: Only GNU/Linux or Darwin operating systems supported.\n"
+                    sys.exit(2)
+            elif self.options.browser == "C" or self.options.browser == "c": # Chrome
+                if sys.platform == 'darwin': # on darwin
+                    self.operating_system = 'darwin'
+                    c_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
+                    c_osx = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+                    try:
+                        if os.path.exists(c_his_osx):
+                            self.browser = "C"
+                            if self.options.browser_history: # if exists, extract user browser's history path
+                                self.browser_history_path = self.options.browser_history
+                            else:
+                                self.browser_history_path = c_his_osx
+                            self.browser_path = c_osx
+                    except:
+                        print "Warning: Chrome hasn't been detected on your Darwin system.\n"
+                        sys.exit(2)
+                elif sys.platform.startswith('linux'): # on unix
+                    self.operating_system = 'linux'
+                    c_lin = os.path.join(os.path.expanduser('~'), '.config/google-chrome/History')
+                    if os.path.exists(c_lin):
+                        self.browser = "C"
+                        if self.options.browser_history: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser_history
+                        else:
+                            self.browser_history_path = c_lin
+                    else:
+                        print "Warning: Chrome hasn't been detected on your Unix system.\n"
+                        sys.exit(2)
+                else:
+                    print "Warning: Only GNU/Linux or Darwin operating systems supported.\n"
+                    sys.exit(2)
+            elif self.options.browser == "Ch" or self.options.browser == "CH" or self.options.browser == "ch": # Chromium
+                if sys.platform == 'darwin': # on darwin
+                    self.operating_system = 'darwin'
+                    chromium_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
+                    chromium_osx = '/Applications/Chromium.app/Contents/MacOS/Chromium'
+                    try:
+                        if os.path.exists(chromium_his_osx):
+                            self.browser = "CHROMIUM"
+                            if self.options.browser_history: # if exists, extract user browser's history path
+                                self.browser_history_path = self.options.browser_history
+                            else:
+                                self.browser_history_path = chromium_his_osx
+                            self.browser_path = chromium_osx
+                    except:
+                        print "Warning: Chromium hasn't been detected on your Darwin system.\n"
+                        sys.exit(2)
+                elif sys.platform.startswith('linux'): # on unix
+                    self.operating_system = 'linux'
+                    chromium_lin = os.path.join(os.path.expanduser('~'), '.config/chromium/Default/History')
+                    if os.path.exists(chromium_lin):
+                        self.browser = "CHROMIUM"
+                        if self.options.browser_history: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser_history
+                        else:
+                            self.browser_history_path = chromium_lin
+                    else:
+                        print "Warning: Chromium hasn't been detected on your Unix system.\n"
+                        sys.exit(2)
+                else:
+                    print "Warning: Only GNU/Linux or Darwin operating systems supported.\n"
+                    sys.exit(2)
+            elif self.options.browser == "S" or self.options.browser == "s": # Safari
+                if sys.platform == 'darwin': # on darwin
+                    self.operating_system = 'darwin'
+                    s_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
+                    s_osx = '/Applications/Safari.app/Contents/MacOS/Safari'
+                    try:
+                        if os.path.exists(s_his_osx):
+                            self.browser = "S"
+                            if self.options.browser_history: # if exists, extract user browser's history path
+                                self.browser_history_path = self.options.browser_history
+                            else:
+                                self.browser_history_path = s_his_osx
+                            self.browser_path = s_osx
+                    except:
+                        print "Warning: Safari hasn't been detected on your Darwin system.\n"
+                        sys.exit(2)
+                elif sys.platform.startswith('linux'): # on unix
+                    self.operating_system = 'linux'
+                    safari_lin = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
+                    if os.path.exists(safari_lin):
+                        self.browser = "S"
+                        if self.options.browser_history: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser_history
+                        else:
+                            self.browser_history_path = safari_lin
+                    else:
+                        print "Warning: Safari hasn't been detected on your Unix system.\n"
+                        sys.exit(2)
+                else:
+                    print "Warning: Only GNU/Linux or Darwin operating systems supported.\n"
+                    sys.exit(2)
+            else: # browser not supported error
+                print "You must enter a correct input to set your browser manually: F = Firefox / C = Chrome / S = Safari / Ch = Chromium\n"
+                sys.exit(2)
+        # make browser set, automatically
+        else:
+            if sys.platform == 'darwin':
+                self.operating_system = 'darwin'
+                # paths to the browsing history db's 
+                f_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Firefox/Profiles')
+                c_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Google/Chrome/Default/History')
+                chromium_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Application Support/Chromium/Default/History')
+                s_his_osx = os.path.join(os.path.expanduser('~'), 'Library/Safari/History.plist')
+                # path to the browser executables
+                f_osx = '/Applications/Firefox.app/Contents/MacOS/firefox' 
+                c_osx = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+                chromium_osx = '/Applications/Chromium.app/Contents/MacOS/Chromium'
+                s_osx = '/Applications/Safari.app/Contents/MacOS/Safari'
+                try:
+                    if os.path.exists(f_his_osx):
+                        if len(os.listdir(f_his_osx)) > 2:
+                            print 'You have multiple profiles, choosing the last one used'
+                            # filter to use the directory that was last modified.
+                            all_subdirs = [os.path.join(f_his_osx,d)for d in os.listdir(f_his_osx)]
+                            try:
+                                all_subdirs.remove(os.path.join(f_his_osx,'.DS_Store')) # throwing out .DS_store
+                            except:
+                                pass
+                            latest_subdir = max(all_subdirs, key=os.path.getmtime)
+                            osx_profile = os.path.join(f_his_osx, latest_subdir)
+                            if self.options.browser_history_history: # if exists, extract user browser's history path
+                                self.browser_history_path = self.options.browser_history
+                            else:
+                                self.browser_history_path = os.path.join(osx_profile, 'places.sqlite')
+                        else:
+                            for folder in os.listdir(f_his_osx):
+                                if folder.endswith('.default'):
+                                    osx_default = os.path.join(f_his_osx, folder)
+                                    if self.options.browser_history: # if exists, extract user browser's history path
+                                        self.browser_history_path = self.options.browser_history
+                                    else:
+                                        self.browser_history_path = os.path.join(osx_default, 'places.sqlite')
+                        self.browser = "F"
+                        self.browser_path = f_osx
+                    elif os.path.exists(c_his_osx):
+                        self.browser = "C"
+                        if self.options.browser_history: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser_history
+                        else:
+                            self.browser_history_path = c_his_osx
+                        self.browser_path = c_osx
+                    elif os.path.exists(chromium_his_osx):
+                        self.browser = "CHROMIUM"
+                        if self.options.browser_history: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser_history
+                        else:
+                            self.browser_history_path = chromium_his_osx
+                        self.browser_path = chromium_osx
+                    elif os.path.exists(s_his_osx):
+                        self.browser = "S"
+                        if self.options.browser_history: # if exists, extract user browser's history path
+                            self.browser_history_path = self.options.browser_history
+                        else:
+                            self.browser_history_path = s_his_osx
+                        self.browser_path = s_osx
+                except:
+                    print "Warning: None of the currently supported browsers (Firefox, Chrome, Chromium, Safari) are installed."
+
+            elif sys.platform.startswith('linux'):
+                self.operating_system = 'linux'
+                f_lin = os.path.join(os.path.expanduser('~'), '.mozilla/firefox/') #add the next folder
+                c_lin = os.path.join(os.path.expanduser('~'), '.config/google-chrome/History')
+                chromium_lin = os.path.join(os.path.expanduser('~'), '.config/chromium/Default/History')
+                if os.path.exists(f_lin):
+                    #missing multiple profile support
+                    for folder in os.listdir(f_lin):
+                        if folder.endswith('.default'):
+                            lin_default = os.path.join(f_lin, folder)
+                            if self.options.browser_history: # if exists, extract user browser's history path
+                                self.browser_history_path = self.options.browser_history
+                            else:
+                                self.browser_history_path = os.path.join(lin_default, 'places.sqlite')
+                            self.browser = "F"
+                elif os.path.exists(c_lin):
+                    self.browser = "C"
+                    if self.options.browser_history: # if exists, extract user browser's history path
+                        self.browser_history_path = self.options.browser_history
+                    else:
+                        self.browser_history_path = c_lin
+                elif os.path.exists(chromium_lin):
+                    self.browser = "CHROMIUM"
+                    if self.options.browser_history: # if exists, extract user browser's history path
+                        self.browser_history_path = self.options.browser_history
+                    else:
+                        self.browser_history_path = chromium_lin
+
+        # ouput browser used on different platforms
         if sys.platform.startswith('linux'):
             if self.browser == "F":
                 print "Using: Firefox\n"
@@ -214,7 +370,11 @@ class bc(object):
         if self.options.debug == True:
             if sys.platform == 'darwin':
                 if self.browser == "F" or self.browser == "C" or self.browser == "CHROMIUM":
-                    self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+                    try:
+                        self.browser_version = subprocess.check_output([self.browser_path, '--version']).strip('\n')
+                    except:
+                        a = subprocess.Popen(['firefox', '--version'], stdout=subprocess.PIPE)
+                        self.browser_version = a.stdout.read()
             elif sys.platform.startswith('linux') and self.browser == "F":
                 try:
                     self.browser_version = subprocess.check_output(['firefox', '--version']).strip('\n')
@@ -261,7 +421,7 @@ class bc(object):
             plist = readPlist(self.browser_history_path)
             url = [plist['WebHistoryDates'][0][''], '']
         else: # Browser not allowed
-            print "\nSorry, you don't have a compatible browser\n\n"
+            print "Sorry, you don't have a compatible browser\n\n"
             exit(2)
         self.url = url
         return url[0]
