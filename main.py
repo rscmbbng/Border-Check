@@ -1,4 +1,4 @@
-#!/usr/local/bin/python
+#!/usr/bin/env python 
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
