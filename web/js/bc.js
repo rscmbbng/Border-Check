@@ -1,6 +1,8 @@
 window.onload = function () {
   index = 0
-  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.kaart-drie/{z}/{x}/{y}.png')
+  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.kaart-drie/{z}/{x}/{y}.png',{
+    attribution: 'Cable data: <a href="http://cablemap.info/">cablemap.info</a>'
+  })
   blank_map = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.blank-populations/{z}/{x}/{y}.png')
   osm =   L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -9,8 +11,7 @@ window.onload = function () {
       minZoom: 2,
       maxZoom:6,
       zoomControl:false,
-      layers: [osm, cables, blank_map]
-
+      layers: [blank_map]
       }).setView(latlong[index], 3);
 
   blank_map.addTo(map)
@@ -27,6 +28,7 @@ window.onload = function () {
   new L.Control.Zoom({
     position: 'topright'}
     ).addTo(map)
+  new L.Control.Attribution
 
   //custom markers:
 
@@ -105,7 +107,7 @@ window.onload = function () {
     var marker = L.marker([src[0], src[1]],{icon: makeCustomMarker(index)})
     var popup = L.Popup({
       maxHeight: 50})
-    var popupcontent = "<p>Hop no:"+hop_list[index]+"<br />Server name:<br />"+server_name_list[index]+"<br />Network owner:<br />"+asn_list[index]+"</p>"
+    var popupcontent = "Server name:<br /><b>"+server_name_list[index]+"</b><br />Network owner:<br /><b>"+asn_list[index]+"</b></p>"
     marker.bindPopup(popupcontent)
     AddMarkerCluster(marker, index)
   }
