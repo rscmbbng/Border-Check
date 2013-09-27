@@ -61,9 +61,9 @@ output = """
   <link rel="stylesheet" href="js/cluster/MarkerCluster.Default.css"/>
   <link rel="stylesheet" href="js/cluster/MarkerCluster.css"/>
   <script src="js/leaflet/leaflet.js"></script>
+  <script src="js/jquery-1.10.2.min.js"></script>
   <script src="js/rlayer-src.js"></script>
   <script src="js/raphael.js"></script>
-  <script src="js/jquery-1.10.2.min.js"></script>
   <script src="js/bc.js"></script>
   <script src="js/favicon.js"></script>
   <script src="js/cluster/leaflet.markercluster-src.js"></script>
@@ -85,12 +85,35 @@ output = """
       <div class ="header" id="url">"""+url+"""</div>
       <div id="map" style="width: 100%; height: 100%"></div>
       <div class ="bar">
-      <div id="button"> > </div>
+      <div id="button" class='toggle'> > </div>
       <div class = info>
       <div> <img src='images/bclogo.png'></img></div>
-      <div id='info-text'><p>Border Check allows you to retrace your path across the internet's infrastructure, it will map you all the servers you pass while you browse to a specific website.</p>
-      As you surf the net, data packets are sent from your computer to the target server. These data packets go on a journey hopping from server to server, potentially crossing multiple countries and networks, until the packets reach the desired website. In each of the countries different laws and practices can apply to the data, influencing whether or not authorities can inspect, store or modify that data. </p>
-
+      <div id='info-text'>
+      <br /><div class='toggle' id='about'>About</div>
+      <div id='about-content'>
+      <p>As you surf the net, data packets are sent from your computer to the target server. These data packets go on a journey hopping from server to server, potentially crossing multiple countries and networks, until the packets reach the desired website.</p>
+      <p> Border Check allows you to retrace the path your data takes across the internet's infrastructure. It will map out all the servers your data passes and shows you in which countries or cities these servers are located. Additionally Border Check will try to provide you with additional data on these servers, such as the companies they belong to.</p>
+      <p> Visit the <a href="https://github.com/rscmbbng/Border-Check"> project homepage</a> for more information.
+      </div>
+      <p class='divider'>------------------------------</p>
+      </div>
+      <div class='toggle' id='legend'> Map legend </div>
+      <div id='legend-content'>
+      <center><pre>   <img id="home" class='toggle' src='images/markers/marker-icon-0.png'></img>    <img class='toggle' id="hop" src='images/markers/marker-icon-11.png'></img>   <img  class='toggle'id="cluster" src='images/markers/cluster-marker.png'></img>    <img class='toggle' id="destination" src='images/markers/marker-icon-last.png'></img>    </pre></center>
+      <div id=legend-text></div></div>
+      <p class='divider'>------------------------------</p>
+      <div class='toggle' id='attrib'>Who?</div>
+      <div id='attrib-content'>
+      <p> Border Check is a project by <a href="http://www.roelroscamabbing.nl">Roel Roscam Abbing</a>. Programming by <a href="http://www.lordepsylon.net">Lord Epsylon</a>. Design by <a href="http://bartvanharen.nl/">Bart Van Haren</a>.</p>
+      <p>BC was developed during <a href="http://summersessions.net/">Summer Sessions 2013</a> with with the support of <a href="http://v2.nl">V2_ Institute For The Unstable Media</a> at <a href="http://www.laboralcentrodearte.org">Laboral Centro De Arte</a> and the <a href="http://www.mp19.net">MP19 Openlab</a>.
+      It uses <a href="http://www.python.org">Python</a>, <a href="http://www.openstreetmap.org">OpenStreetMap</a>, <a href="http://www.leafletjs.com"> Leaflet</a> and <a href="https://github.com/rscmbbng/Border-Check/blob/master/doc/INSTALL"> others.</a></p></div>
+      <p class='divider'>------------------------------</p>
+      <div class='toggle' id='contact'>Get in touch</div>
+      <div id='contact-content'>
+      Roel Roscam Abbing (rscmbbng@riseup.net, @rscmbbng) <br />
+      psy (epsylon@riseup.net)
+      </div>
+      
       <div>
       </div>
       </div>

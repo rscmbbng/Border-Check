@@ -1,6 +1,6 @@
 window.onload = function () {
   index = 0
-  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.kaart-drie/{z}/{x}/{y}.png',{
+  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.blank-sea-cables/{z}/{x}/{y}.png',{
     attribution: 'Cable data: <a href="http://cablemap.info/">cablemap.info</a>'
   })
   blank_map = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.blank-populations/{z}/{x}/{y}.png')
@@ -54,6 +54,33 @@ window.onload = function () {
           slide = 0}
       })
 
+      $('#attrib-content').hide()
+      $('#legend-content').hide()
+      $('#about-content').hide()
+      $('#contact-content').hide()
+
+      $('#attrib').bind('click', function(){
+      $('#attrib-content').toggle(400)})
+
+      $('#legend').bind('click', function(){
+      $('#legend-content').toggle(400)})
+
+      $('#about').bind('click', function(){
+      $('#about-content').toggle(400)})
+
+      $('#contact').bind('click', function(){
+      $('#contact-content').toggle(400)})
+
+      //legend controlls
+        $('#home').bind('click', function(){
+        $('#legend-text').html("This is the first hop on your journey, most probably your provider's router in your street or neighbourhood")})
+        $('#hop').bind('click', function(){
+        $('#legend-text').html('This represents either a server or router that you pass. Click it to get metadata on it.')})
+        $('#cluster').bind('click', function(){
+        $('#legend-text').html('Server hops in the same country or location get automatically grouped into clusters. Click the clusters to see individual hops.')})
+        $('#destination').bind('click', function(){
+        $('#legend-text').html("The last hop on your journey. Ideally it is the machine that serves the destination website. More likeley however it is it's firewall")})
+
 
 
 
@@ -70,16 +97,26 @@ window.onload = function () {
   AddStep(latlong[index], latlong[index+1], index) // initialize the animation
 
   function makeCustomMarker(index){
-    var customIcon = new L.icon({
-    iconUrl: 'images/markers/marker-icon-'+index+'.png',
+    if (index < counter_max){
+      var customIcon = new L.icon({
+      iconUrl: 'images/markers/marker-icon-'+index+'.png',
 
-    iconSize:     [20, 20], // size of the icon
-    iconAnchor:   [10, 10], // point of the icon which will correspond to marker's location
-    popupAnchor:  [-150, 0] // point from which the popup should open relative to the iconAnchor
-    });
+      iconSize:     [30, 30], // size of the icon
+      iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+      popupAnchor:  [-150, 50] // point from which the popup should open relative to the iconAnchor
+      });
+    }
+    if (index == counter_max){
+      var customIcon = new L.icon({
+      iconUrl: 'images/markers/marker-icon-last.png',
+
+      iconSize:     [30, 30], // size of the icon
+      iconAnchor:   [15, 15], // point of the icon which will correspond to marker's location
+      popupAnchor:  [-150, 0] // point from which the popup should open relative to the iconAnchor
+      });
+    }
     return customIcon
-  }
-  
+}
 
   function makeClusterGroups(country_code_list, index){
     for (var i = 0; i < unique_country_code_list.length; i++){
@@ -128,7 +165,10 @@ window.onload = function () {
         map.panTo(latlong[index],{
         animate: true,
         duration: 2
-        })
+        }
+
+
+        )
       }
     
     window.setTimeout(function(){
