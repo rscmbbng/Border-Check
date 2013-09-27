@@ -72,13 +72,28 @@ body{
 	float: left;
 	overflow: auto;
 	
+}
+.test{
+	background: repeat;
+}
 
+.divider{
+	font-size: 14;
+	text-align: center;
+}
+#footer{
+	bottom:0;
+	overflow: auto;
+}
+.info a {
+	color:#6cb9f7;
 }
 .info img{
 	top :0px;
 }
 .info p {
 	overflow: auto;
+	padding-left: 10px;
 }
 .info #info-text{
 	text-align: justify;
@@ -86,7 +101,13 @@ body{
 	overflow: auto;
 
 }
-
+.toggle{
+	text-align: center;
+	font-weight: 700;
+	cursor: pointer;
+	font-size: 14;
+}
+}
 #metadata{
 	visibility: hidden;
 }
