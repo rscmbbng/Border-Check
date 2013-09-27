@@ -6,6 +6,18 @@ GPLv3 - 2013 by psy (epsylon@riseup.net)
 """
 from xml.dom.minidom import parseString
 import xml.etree.ElementTree as ET
+import re
+
+#function to split ISP company names from ASN
+def ASN_Split(asn):
+  name_parts = []
+  for i in asn.split():
+    if re.match(r'AS\d{1,6}$', i):
+      asn = i
+    elif not re.match(r'AS\d{1,6}$', i):
+      name_parts.append(i)
+  company = ' '.join(name_parts)
+  return (asn, company)
 
   # extract data from a xml file
 f = open('data.xml', 'r')
@@ -23,8 +35,10 @@ latlong= []
 asn_list =[]
 server_name_list = []
 timestamp_list = []
+telco_list = []
 last_hop = int(xml.findall('hop')[-1].text)
 country_code_list = []
+
 
 for counter in range(0, last_hop+1):
     url = xml.getroot().text
@@ -40,7 +54,8 @@ for counter in range(0, last_hop+1):
 
     latlong = [float(latitude.encode('utf-8')), float(longitude.encode('utf-8'))]
     geoarray.append(latlong)
-    asn_list.append(asn.encode('utf-8'))
+    asn_list.append(ASN_Split(asn.encode('utf-8'))[0])
+    telco_list.append(ASN_Split(asn.encode('utf-8'))[1])
     hop = int(hop) +1
     hop_list.append(str(hop))
     hop_ip_list.append(hop_ip.encode('utf-8'))
@@ -102,12 +117,6 @@ output = """
       <center><pre>   <img id="home" class='toggle' src='images/markers/marker-icon-0.png'></img>    <img class='toggle' id="hop" src='images/markers/marker-icon-11.png'></img>   <img  class='toggle'id="cluster" src='images/markers/cluster-marker.png'></img>    <img class='toggle' id="destination" src='images/markers/marker-icon-last.png'></img>    </pre></center>
       <div id=legend-text></div></div>
       <p class='divider'>------------------------------</p>
-      <div class='toggle' id='attrib'>Who?</div>
-      <div id='attrib-content'>
-      <p> Border Check is a project by <a href="http://www.roelroscamabbing.nl">Roel Roscam Abbing</a>. Programming by <a href="http://www.lordepsylon.net">Lord Epsylon</a>. Design by <a href="http://bartvanharen.nl/">Bart Van Haren</a>.</p>
-      <p>BC was developed during <a href="http://summersessions.net/">Summer Sessions 2013</a> with with the support of <a href="http://v2.nl">V2_ Institute For The Unstable Media</a> at <a href="http://www.laboralcentrodearte.org">Laboral Centro De Arte</a> and the <a href="http://www.mp19.net">MP19 Openlab</a>.
-      It uses <a href="http://www.python.org">Python</a>, <a href="http://www.openstreetmap.org">OpenStreetMap</a>, <a href="http://www.leafletjs.com"> Leaflet</a> and <a href="https://github.com/rscmbbng/Border-Check/blob/master/doc/INSTALL"> others.</a></p></div>
-      <p class='divider'>------------------------------</p>
       <div class='toggle' id='contact'>Get in touch</div>
       <div id='contact-content'>
       Roel Roscam Abbing (rscmbbng@riseup.net, @rscmbbng) <br />
@@ -126,6 +135,7 @@ output = """
   counter_max = """+str(last_hop)+"""
   latlong = """+str(geoarray)+"""
   asn_list = """+str(asn_list)+"""
+  telco_list = """+str(telco_list)+"""
   server_name_list = """+str(server_name_list)+"""
   timestamp_list = """+str(timestamp_list)+"""
   country_code_list = """+str(country_code_list)+"""
@@ -133,3 +143,6 @@ output = """
   </script>
 </html>
 """
+x = open('test.html','w')
+x.write(output)
+x.close()

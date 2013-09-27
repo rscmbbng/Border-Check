@@ -1,6 +1,6 @@
 window.onload = function () {
   index = 0
-  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.blank-sea-cables/{z}/{x}/{y}.png',{
+  cables = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.Test/{z}/{x}/{y}.png',{
     attribution: 'Cable data: <a href="http://cablemap.info/">cablemap.info</a>'
   })
   blank_map = L.tileLayer('http://{s}.tiles.mapbox.com/v3/rllfff.blank-populations/{z}/{x}/{y}.png')
@@ -55,7 +55,6 @@ window.onload = function () {
       })
 
       $('#attrib-content').hide()
-      $('#legend-content').hide()
       $('#about-content').hide()
       $('#contact-content').hide()
 
@@ -144,7 +143,7 @@ window.onload = function () {
     var marker = L.marker([src[0], src[1]],{icon: makeCustomMarker(index)})
     var popup = L.Popup({
       maxHeight: 50})
-    var popupcontent = "Server name:<br /><b>"+server_name_list[index]+"</b><br />Network owner:<br /><b>"+asn_list[index]+"</b></p>"
+    var popupcontent = "Server name:<br /><b>"+server_name_list[index]+"</b><br />ASN: <br /><b>"+asn_list[index]+"</b><br />Network owner:<br /><b><a href='https://duckduckgo.com/?q="+telco_list[index]+"'>"+telco_list[index]+"</a></b></p>"
     marker.bindPopup(popupcontent)
     AddMarkerCluster(marker, index)
   }
