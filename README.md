@@ -1,5 +1,7 @@
 Border Check v.01
 =====================
+[(información en castellano sobre el uso e instalación de BC aquí)](http://hackingaround.net/pub/seguridad/Border-check-Conociendo-al-gran-hermano-cruzando-leyes-y-trazas.pdf)
+
 
 Border Check (BC) is a browser extension that illustrates the physical and political realities of the internet's infrastructure using free software tools.
 
