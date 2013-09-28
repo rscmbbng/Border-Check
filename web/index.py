@@ -119,7 +119,8 @@ output = """
       <p class='divider'>------------------------------</p>
       <div class='toggle' id='contact'>Get in touch</div>
       <div id='contact-content'>
-      Roel Roscam Abbing (rscmbbng@riseup.net, @rscmbbng) <br />
+      <br />
+      Roel Roscam Abbing (rscmbbng@riseup.net) <br />
       psy (epsylon@riseup.net)
       </div>
       

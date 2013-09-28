@@ -72,9 +72,9 @@ window.onload = function () {
 
       //legend controlls
         $('#home').bind('click', function(){
-        $('#legend-text').html("This is the first hop on your journey, most probably your provider's router in your street or neighbourhood")})
+        $('#legend-text').html("This is the first hop on your journey, most probably the router of your provider for your neighbourhood or city.")})
         $('#hop').bind('click', function(){
-        $('#legend-text').html('This represents either a server or router that you pass. Click it to get metadata on it.')})
+        $('#legend-text').html("This represents a hop to either a server or router that you pass. Click on it to view it's metadata." )})
         $('#cluster').bind('click', function(){
         $('#legend-text').html('Server hops in the same country or location get automatically grouped into clusters. Click the clusters to see individual hops.')})
         $('#destination').bind('click', function(){
