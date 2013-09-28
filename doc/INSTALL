@@ -26,9 +26,11 @@ BC runs on OSx and Unix systems. It requires the following libraries/dependencie
 
                https://pypi.python.org/pypi/lxml/3.2.3
 
-                       * On Debian-based systems (ex: Ubuntu), run: 
+                       * On Debian-based systems (ex: Ubuntu), first run: 
 
-                              sudo apt-get install python-geoip python-lxml
+                              sudo apt-get install python-pip 
+
+                              and then run pip install lxml and pip install pygeoip
         - biplist:
 
                https://pypi.python.org/pypi/biplist/0.5

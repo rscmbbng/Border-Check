@@ -9,11 +9,11 @@ from urlparse import urlparse
 try:
     import pygeoip
 except:
-    print "\nError importing: pygeoip lib. \n\nOn Debian based systems, please try like root:\n\n $ apt-get install python-geoip\n"
+    print "\nError importing: pygeoip lib. \n\n On Debian based systems:\n\n $ apt-get install python-pip and $ pip install pygeoip \n"
     sys.exit(2)
 try:
     import sqlite3
-except:
+except: #this should be a standard package of python 2.5+
     print "\nError importing: sqlite3 lib. \n\nOn Debian based systems, please try like root:\n\n $ apt-get install sqlite3\n"
     sys.exit(2)
 
@@ -719,10 +719,10 @@ class bc(object):
                         open('data.xml', 'w') # starting a new xml data container in write mode
                         traces = self.try_running(self.traces, "\nInternal error tracerouting.")
                         # open same browser of history access on a new tab
-                        try:
-                            webbrowser.open('http://127.0.0.1:8080', new=0) # open on same tab?
-                        except:
-                            print "Error: Browser is not responding correctly.\n"
+                        # try:
+                        #     webbrowser.open('http://127.0.0.1:8080', new=2) # open on same tab?
+                        # except:
+                        #     print "Error: Browser is not responding correctly.\n"
             time.sleep(5) # free process time or goodbye :-)       
 
 if __name__ == "__main__":
