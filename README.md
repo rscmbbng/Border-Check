@@ -23,8 +23,9 @@ Options:
   -h, --help            show this help message and exit
   -d, --debug           debug mode
   --xml=EXPORT_XML      export traces to xml (ex: --xml foo.xml)
+  --load=IMPORT_XML     import traces to show (ex: --load bar.xml)
   --bh=BROWSER_HISTORY  set browser's history path
-  -b BROWSER            set browser manually: F = Firefox / C = Chrome / S = Safari / Ch = Chromium
+  -b BROWSER            set browser manually: F = Firefox / C = Chrome / S = Safari / Ch = Chromium 
 ```
 
 #### Examples of usage:
@@ -68,6 +69,10 @@ Set browser's history path manually, on Safari/OSx:
 Set browser's history path manually, on Firefox/Unix:
 
 `$ python bc --bh "Library/Safari/History.plist"` 
+
+Import 'traces' from xml:
+
+`$ python bc --load "mytravel.xml"
 
 ## Installing BC:
 
