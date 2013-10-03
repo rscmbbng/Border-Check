@@ -144,6 +144,3 @@ output = """
   </script>
 </html>
 """
-x = open('test.html','w')
-x.write(output)
-x.close()
