@@ -30,7 +30,11 @@ BC runs on OSx and Unix systems. It requires the following libraries/dependencie
 
                               sudo apt-get install python-pip 
 
-                              and then run pip install lxml and pip install pygeoip
+                              and then run:
+      
+                                   pip install lxml
+           
+                                   pip install pygeoip
         - biplist:
 
                https://pypi.python.org/pypi/biplist/0.5

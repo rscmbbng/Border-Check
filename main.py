@@ -23,9 +23,6 @@ from webserver import BorderCheckWebserver
 from xml_exporter import xml_reporting
 import webbrowser
 
-# set to emit debug messages about errors (0 = off).
-DEBUG = 1
-
 class bc(object):
     """
     BC main Class
@@ -96,17 +93,21 @@ class bc(object):
         try:
             return func(*args)
         except Exception as e:
-            print("\n[Error] - Something wrong fetching urls. Aborting..."), "\n"
-            if DEBUG:
+            if not options.debug:
+                print("[Error] - Something wrong happens!. Try to run again with --debug option to see more detailed information about the error on a Traceback output."), "\n"
+            else:
+                print("[Error] - Something wrong happens!. You have the reason at the end of the Traceback. If you don't understand what's happen, try to contact with project contributors."), "\n"
+            if options.debug == 1:
                 traceback.print_exc()
-                sys.exit(2)
+                print "" # \n after traceback ouput
+            sys.exit(2)
 
     def check_root(self):
         """     
         Check root permissions
         """
         if not os.geteuid()==0:
-            sys.exit("\nOnly root can run this script...\n")
+            sys.exit("Warning: Only root can launch traceroutes. (Try: 'sudo ./bc')\n")
 
     def check_browser(self):
         """
@@ -384,7 +385,10 @@ class bc(object):
                 print "Can't get Safari version information, you'll have to look it up manually \n"
             else:
                 print "Version:", self.browser_version
-            print "History:", self.browser_history_path, "\n"
+            if self.options.import_xml: # history not needed on xml importing
+                pass
+            else:
+                print "History:", self.browser_history_path, "\n"
 
     def getURL(self):
         """
@@ -429,6 +433,9 @@ class bc(object):
         """
         Run an LFT
         """
+        # LFT needs root
+        root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
+
         #try:
         if self.operating_system == 'darwin':
             try:
@@ -438,19 +445,19 @@ class bc(object):
                 self.content = a.stdout.read()
 
         if self.operating_system == 'linux':
-            if self.method == '-e':
+            if self.method == '-e': # tcp probes
                 self.method = '-E'
             try:
-                self.content = subprocess.check_output(['lft', '-S', '-n', self.destination_ip])
+                self.content = subprocess.check_output(['lft', '-S', '-n', self.method, self.destination_ip])
                 # support for older python versions (<2.75) that don't support subprocess.check_output
             except:
-                a = subprocess.Popen(['lft', '-S', '-n', self.destination_ip], stdout=subprocess.PIPE)
+                a = subprocess.Popen(['lft', '-S', '-n', self.method, self.destination_ip], stdout=subprocess.PIPE)
                 self.content = a.stdout.read()
         self.attempts += 1
         if self.options.debug == True:
             print "Tracing:", self.destination_ip, "with method:", self.method, 'attempt:', self.attempts, '\n'
         self.lft_parse()
-    
+
     def lft_parse(self):
         """
         Parse the lft to see if it produced any results, if not, run another LFT using a different method
@@ -524,7 +531,7 @@ class bc(object):
                 for ip in line:
                     if re.match(r'\d{1,4}\.\dms$', ip):
                         self.timestamp = ip.replace('ms', '')
-                    if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', ip):
+                    if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', ip) or re.match('localhost', ip):
                         pass
                     else:    
                         if re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",ip):
@@ -639,6 +646,45 @@ class bc(object):
             os.remove('GeoIPASNum.gz')
         print "Database: GeoIPASNum \n"
 
+    def importXML(self):
+        """
+        Import travels data directly from XML file (no root needed) and launch a web browser on a thread with a map showing them.
+        """
+        try:
+            xml_results = xml_reporting(self)
+            xml_imported = xml_results.read_xml_results() # read xml directly from file
+        except:
+            print("[Error] - Something wrong importing data from XML file. Aborting..."), "\n"
+            sys.exit(2)
+
+        # Set the maxmind geo databases 
+        self.geoip = pygeoip.GeoIP('GeoLiteCity.dat')
+        self.geoasn = pygeoip.GeoIP('GeoIPASNum.dat')
+        match_ip = xml_imported[0].strip('http://').strip(':8080')
+        #regex for filtering local network IPs
+        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://') or match_ip.startswith('localhost'):
+            print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+            print "URL:", self.options.import_xml, "\n"
+            print "Warning: This target is not valid!.\n"
+            sys.exit(2)
+        else:
+            if xml_imported[0].startswith('file://'):
+                print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                print "URL:", self.options.import_xml, "\n"
+                print "Warning: This target is not valid!.\n"
+                sys.exit(2)
+            else:
+                print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                print "URL:", self.options.import_xml, "\n"
+                print "Host:", xml_imported[0], "\n"
+                os.system('cp -r ' + self.options.import_xml + ' data.xml') # copy XML data provided by user to data.xml template
+                # start web mode (on a different thread)
+                try:
+                    webbrowser.open('http://127.0.0.1:8080', new=1)
+                    BorderCheckWebserver(self)
+                except (KeyboardInterrupt, SystemExit):
+                    sys.exit()
+
     def run(self, opts=None):
         """
         Run BorderCheck
@@ -653,77 +699,78 @@ class bc(object):
         print('='*75)
         print(str(p.version))
         print('='*75)
-        # root checker
-        root = self.try_running(self.check_root, "\nInternal error checking root permissions.")
         # extract browser type and path
         browser = self.try_running(self.check_browser, "\nInternal error checking browser files path.")
         # extract url
         url = self.try_running(self.getURL, "\nInternal error getting urls from browser's database.")
         # set geoip database
         geo = self.try_running(self.getGEO, "\nInternal error setting geoIP database.")
-        # run traceroutes
-        match_ip = self.url[0].strip('http://').strip(':8080')
-        #regex for filtering local network IPs
-        if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://'):
-            print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
-            print "URL:", self.url[0], "\n"
-            print "Warning: This target is not valid!.\n"
-            pass
+        # read from XML or run traceroutes + stay latent mode
+        if options.import_xml:
+            import_xml = self.try_running(self.importXML, "\nInternal error importing XML data from file.")
         else:
-            if self.url[0].startswith('file://'):
+            match_ip = self.url[0].strip('http://').strip(':8080')
+            #regex for filtering local network IPs
+            if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('file://') or match_ip.startswith('localhost'):
                 print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
                 print "URL:", self.url[0], "\n"
                 print "Warning: This target is not valid!.\n"
                 pass
             else:
-                traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-            # start web mode (on a different thread)
-        try:
-            t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
-            t.daemon = True
-            t.start()
-            time.sleep(2)
-        except (KeyboardInterrupt, SystemExit):
-            t.join()
-            sys.exit()
-            # open same browser of history access on a new tab
-            try:
-                webbrowser.open('http://127.0.0.1:8080', new=1)
-            except:
-                print "Error: Browser is not responding correctly.\n"
-
-        print('='*75)
-        print(str(p.version))
-        print('='*75 + "\n")
-        print "Status: Waiting for new urls ...\n"
-        print "Type 'Control+C' to exit.\n"
-        # stay latent waiting for new urls
-        while True:
-            url = urlparse(self.getURL()).netloc
-            #url = url.replace('www.','')
-            try:
-                match_ip = url.strip('http://').strip(':8080')
-            except:
-                print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
-                print "URL:", self.url[0], "\n"
-                pass
-            if url != self.old_url:
-                if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip):
+                if self.url[0].startswith('file://'):
+                    print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                    print "URL:", self.url[0], "\n"
+                    print "Warning: This target is not valid!.\n"
                     pass
                 else:
-                    if self.url[0].startswith('file://'):
+                    traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+            # start web mode (on a different thread)
+            try:
+                t = threading.Thread(target=BorderCheckWebserver, args=(self, ))
+                t.daemon = True
+                t.start()
+                time.sleep(2)
+            except (KeyboardInterrupt, SystemExit):
+                t.join()
+                sys.exit()
+                # open same browser of history access on a new tab
+                try:
+                    webbrowser.open('http://127.0.0.1:8080', new=1)
+                except:
+                    print "Error: Browser is not responding correctly.\n"
+
+            print('='*75)
+            print(str(p.version))
+            print('='*75 + "\n")
+            print "Status: Waiting for new urls ...\n"
+            print "Type 'Control+C' to exit.\n"
+            # stay latent waiting for new urls
+            while True:
+                url = urlparse(self.getURL()).netloc
+                #url = url.replace('www.','')
+                try:
+                    match_ip = url.strip('http://').strip(':8080')
+                except:
+                    print '='*45 + "\n", "Target:\n" + '='*45 + "\n"
+                    print "URL:", self.url[0], "\n"
+                    pass
+                if url != self.old_url:
+                    if re.match(r'^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^192.168\.\d{1,3}\.\d{1,3}$', match_ip) or re.match(r'^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$', match_ip) or match_ip.startswith('localhost'):
                         pass
                     else:
-                        if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
-                            os.remove('data.xml')  
-                        open('data.xml', 'w') # starting a new xml data container in write mode
-                        traces = self.try_running(self.traces, "\nInternal error tracerouting.")
-                        # open same browser of history access on a new tab
-                        # try:
-                        #     webbrowser.open('http://127.0.0.1:8080', new=2) # open on same tab?
-                        # except:
-                        #     print "Error: Browser is not responding correctly.\n"
-            time.sleep(5) # free process time or goodbye :-)       
+                        if self.url[0].startswith('file://'):
+                            pass
+                        else:
+                            if os.path.exists('data.xml'): # removing xml data to has a new map each time that bc is launched
+                                os.remove('data.xml')  
+                            open('data.xml', 'w') # starting a new xml data container in write mode
+                            traces = self.try_running(self.traces, "\nInternal error tracerouting.")
+                            # open same browser of history access on a new tab
+                            # try:
+                            #     webbrowser.open('http://127.0.0.1:8080', new=2) # open on same tab?
+                            # except:
+                            #     print "Error: Browser is not responding correctly.\n"
+                time.sleep(5) # free process time or goodbye :-)       
 
 if __name__ == "__main__":
     app = bc()

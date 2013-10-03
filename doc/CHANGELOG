@@ -2,9 +2,19 @@
 Changelog: Border-Check
 ==============================
 
+
+=================
+October 4, 2013:
+=================
+
+- added feature to import traces from XML template
+- fixed some LFT subprocess errors on Unix based systems
+- more clean non-debug mode
+- added 'localhost' filter to target parser
+
 =================
 September 27, 2013:
 =================
 
-- Public release: Border Check v0.1
+- public release: Border Check v0.1
 
