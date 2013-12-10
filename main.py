@@ -94,9 +94,9 @@ class bc(object):
             return func(*args)
         except Exception as e:
             if not options.debug:
-                print("[Error] - Something wrong happens!. Try to run again with --debug option to see more detailed information about the error on a Traceback output."), "\n"
+                print("[Error] - Something went wrong! Try to run again with the '--debug' argument for more info via the a traceback output."), "\n"
             else:
-                print("[Error] - Something wrong happens!. You have the reason at the end of the Traceback. If you don't understand what's happen, try to contact with project contributors."), "\n"
+                print("[Error] - Something went wrong! Have a look the traceback. If you don't understand what happened, copy it and get in touch with one of the project contributors via https://github.com/rscmbbng/Border-Check."), "\n"
             if options.debug == 1:
                 traceback.print_exc()
                 print "" # \n after traceback ouput
@@ -508,7 +508,11 @@ class bc(object):
         print "URL:", self.url[0], "\n"
         url = urlparse(self.getURL()).netloc #changed this for prototyping
         #url = url.replace('www.','') #--> doing a tracert to example.com and www.example.com yields different results.
-        url_ip = socket.gethostbyname(url)
+        if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\:\d{1,4}$",url):
+            url_ip = socket.gethostbyname(url.split(':')[0])
+        else:
+            url_ip = url.split(':')[0]
+            pass
         self.url = url
         self.destination_ip = url_ip
         print "Host:", url, "\n"
@@ -770,7 +774,7 @@ class bc(object):
                             #     webbrowser.open('http://127.0.0.1:8080', new=2) # open on same tab?
                             # except:
                             #     print "Error: Browser is not responding correctly.\n"
-                time.sleep(5) # free process time or goodbye :-)       
+                time.sleep(5) # To free up process time or goodbye :-)       
 
 if __name__ == "__main__":
     app = bc()
