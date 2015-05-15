@@ -2,10 +2,11 @@
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
-GPLv3 - 2013 by psy (epsylon@riseup.net)
+GPLv3 - 2013-2014-2015 by psy (epsylon@riseup.net)
 """
 import os
 import sys
+import urllib2
 from SocketServer import ForkingMixIn, ThreadingMixIn
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from runpy import run_module
@@ -35,6 +36,16 @@ def print_exception(type=None, value=None, tb=None, limit=None):
         del tb
         return ret
 
+def set_options(self, options):
+    self.options = options
+
+def create_options(self, args=None):
+    self.optionParser = BCOptions()
+    self.options = self.optionParser.get_options(args)
+    if not self.options:
+        return False
+    return self.options
+
 class HttpHandler(BaseHTTPRequestHandler):
     def client_not_allowed(self, addr):
         return False
@@ -43,20 +54,44 @@ class HttpHandler(BaseHTTPRequestHandler):
         print ("Client not allowed ",addr)
         return True 
 
+    def is_valid_url(self,url):
+        import re
+        regex = re.compile(
+            r'^https?://'  # http:// or https://
+            r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain...
+            r'localhost|'  # localhost...
+            r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+            r'(?::\d+)?'  # optional port
+            r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+        return url is not None and regex.search(url)
+
+    def is_online_url(self,url):
+       status_reply = urllib2.urlopen("http://downforeveryoneorjustme.com/"+str(url)).read()
+       if not 'is up' in status_reply:
+           self.online_url = False
+       else:
+           self.online_url = True
+
     def serve(self):
         output = ""
         uri = self.path
         tmp = uri.find ('?')
         args = parse_qs(urlparse(uri)[4])
-
-        if tmp != -1:
+        if 'hostname' in args:
+            if (self.is_valid_url(args['hostname'][0])):
+                online = self.is_online_url(args['hostname'][0])
+                if self.online_url == True:
+                    options = create_options(BCOptions)
+                    if options.debug == True:
+                        print "saving hostname : "+str(args['hostname'])
+                    with open('hostname.submit', 'w') as file:
+                        file.write(str(args['hostname'][0]))
+                else:
+                    args['error']='invalid url !'
+            else:
+                args['error']='invalid url !'
+        if tmp != -1 :
             uri = uri[0:tmp]
-            for a in uri[tmp:-1].split("&"):
-                sep = a.find ("=")
-                if sep != -1:
-                    print "%s)(%s"%(a[0:sep],a[sep:-1])
-                    args[a[0:sep]]=a[sep:-1]
-		
         file = wwwroot + "/" + uri
         if self.client_not_allowed (self.client_address[0]):
             self.wfile.write ("HTTP/1.0 503 Not allowed\r\n\r\nYou are not whitelisted")
@@ -70,9 +105,11 @@ class HttpHandler(BaseHTTPRequestHandler):
                 content = query.get('upfile')
         except:
             pass
+        #print "Request from %s:%d"%self.client_address + "  " + uri
         # print interactions w server
-        # if self.options.debug == True:
-        #     print "Request from %s:%d"%self.client_address + "  " + uri
+        options = create_options(BCOptions)
+        if options.debug == True:
+             print "Request from %s:%d"%self.client_address + "  " + uri
         if uri[-1] == '/' or os.path.isdir(file):
             file = file + "/index.py"
         if os.path.isfile(file + ".py"):

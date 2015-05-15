@@ -46,7 +46,7 @@ body{
 	width:20px;
 	height:100%;
 	position:absolute;
-	background-color: white;
+        background-color:rgba(255, 255, 255, 0.8);
 	-webkit-box-shadow:  12px 0px 8px -4px rgba(0, 0, 0, 0.5);
     box-shadow:  12px 0px 8px -4px rgba(0, 0, 0, 0.5);
     overflow: auto;
@@ -107,7 +107,32 @@ body{
 	cursor: pointer;
 	font-size: 14;
 }
-}
+
 #metadata{
 	visibility: hidden;
+}
+
+.bc-custom-control {
+    background-color:rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 7px rgba(0,0,0,0.65);
+    -webkit-border-radius: 4px;
+            border-radius: 4px;
+    font-color: black;
+    color: black;
+    border-radius: 4px;
+    margin: 10px;
+    padding: 10px;
+}
+
+.leaflet-container a{
+    font-weight:700;
+}
+
+#error{
+    text-align: center;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14;
+    color:red;
+    margin:42px; 
 }

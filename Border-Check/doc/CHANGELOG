@@ -2,6 +2,19 @@
 Changelog: Border-Check
 ==============================
 
+=================
+May 13, 2015:
+=================
+
+- added "wizard" installer
+- added LFT binary to source
+- added more maps
+- added metadata
+- added travelling feature on map
+- added history of urls visited on map
+- added controllers to map (play|hide|stop)
+- fixed some minor bugs
+- public release: Border Check v0.2
 
 =================
 October 4, 2013:

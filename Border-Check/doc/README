@@ -1,0 +1,96 @@
+Border Check v0.2 - 2015
+========================
+
+Border Check (BC) is a browser extension that illustrates the physical and political realities of the internet's infrastructure using free software tools.
+
+As one surfs the net, data packets are sent from the user's computer to the target server. These data packets go on a journey hopping from server to server, potentially crossing multiple countries, until the packets reach the desired website. In each of the countries that are passed different laws and practices can apply to the data, influencing whether or not authorities can inspect, store or modify that data.
+
+In realtime BC lets you know which countries you surf through as you browse the web. Additionally BC will illustrate this process on a world map and (where available) provide you with contextualizing information on that country's laws and practices regarding your data.
+
+Currently supporting the following browsers on OSX and Unix systems: Firefox, Chromium, Chrome, Safari
+
+NOTE: Browser history has to be enabled.
+
+See the included examples for usage.
+
+```
+bc [OPTIONS] 
+
+  --version             show program's version number and exit
+  -h, --help            show this help message and exit
+  -d, --debug           debug mode
+  -l LFT_PATH           path to lft (fetch from source or use provided binary)
+  --xml=EXPORT_XML      export traces to xml (ex: --xml foo.xml)
+  --load=IMPORT_XML     import traces (non root required) (ex: --load bar.xml)
+  --bh=BROWSER_HISTORY  set browser's history path
+  -b BROWSER            set browser type to be used: F = Firefox / C = Chrome / S = Safari / Ch = Chromium / N = None
+
+```
+
+#### Examples of usage:
+
+Normal BC run:
+
+`$ python bc`
+
+Debug mode:
+
+`$ python bc --debug`
+
+Export 'tracing' results to xml:
+
+`$ python bc --xml "mytravel.xml"`
+
+
+#### More options (set browsers, paths, etc):
+
+Use Firefox browser: 
+
+`$ python bc -b F`
+
+Use Chromium browser: 
+
+`$ python bc -b Ch` 
+
+Set browser's history path manually, on Galeon/Unix:
+
+`$ python bc --bh ".galeon/mozilla/galeon/places.sqlite"`
+
+Set browser's history path manually, on Chrome/OSx:
+
+`$ python bc --bh "Library/Application Support/Google/Chrome/Default/History"`
+
+Set browser's history path manually, on Safari/OSx:
+
+`$ python bc --bh "Library/Safari/History.plist"` 
+
+Set browser's history path manually, on Firefox/Unix:
+
+`$ python bc --bh "Library/Safari/History.plist"` 
+
+Import 'traces' from xml:
+
+`$ python bc --load "mytravel.xml"`
+
+Set lft path to be used by BC traces:
+
+`$ python bc -l "/usr/bin/lft"`
+
+
+### Contribute: 
+
+If you want to contribute to BC development, reporting a bug, providing a patch, commenting 
+on the code base or simply need to find help to run it, please go to:
+
+      irc.freenode.net / channel: #BorderCheck
+
+If nobody gets back to you, then drop an e-mail:
+
+    - Roel Roscam Abbing (rscmbbng@riseup.net)
+    - psy (epsylon@riseup.net)
+
+To make donations use the following hashes:
+  
+      - Bitcoin: 1Q63KtiLGzXiYA8XkWFPnWo7nKPWFr3nrc
+      - Ecoin: ETtSteMWxjY7RKWZGMNSkX7eC3BJ21VYXE
+

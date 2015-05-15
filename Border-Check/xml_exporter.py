@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-15 -*-
 """
 BC (Border-Check) is a tool to retrieve info of traceroute tests over website navigation routes.
-GPLv3 - 2013 by psy (epsylon@riseup.net)
+GPLv3 - 2013-2014-2015 by psy (epsylon@riseup.net)
 """
 class xml_reporting(object):
     """
