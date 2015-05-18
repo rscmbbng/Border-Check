@@ -483,26 +483,37 @@ class bc(object):
             self.new_travel = True
             self.last_travel=0
             # New travel
-            
         try:
             if os.path.exists('hostname.submit'): 
                 if url != None:
-                    #print "check history url "+str(url[1]/1000000) + " vs hn " +str(os.path.getmtime('hostname.submit') )
-                    if url[1]/1000000 < os.path.getmtime('hostname.submit') :
-                        url = None
-                        self.last_travel=0
+                    try:
+                        if url[1] == None: # no history feature on browser enabled, try use hostname.submit
+                            hostname_path = open('hostname.submit')
+                            url = [str(hostname_path.read())]
+                            self.last_travel=0
+                        else:
+                            if url[1]/1000000 < os.path.getmtime('hostname.submit') :
+                                url = None
+                                self.last_travel=0
+                    except:
+                            print "\nError reading history: try to enable feature on your browser.\n"
+                            sys.exit(2)
                 if url == None:
                     if self.last_travel< os.path.getmtime('hostname.submit'):
                         self.last_travel = time.time()
                         hostname_path = open('hostname.submit')
                         url = [str(hostname_path.read())]
-                        #print "new travel starting to "+url[0]
                         self.url=url[0]
-                        #else:
-                        #   print "old travel " + str(self.last_travel) + ' - ' + str(os.path.getmtime('hostname.submit'))
             else:
+                # starting a hostname.submit with a default value (ex: http://bordercheck.org)
+                bc = "http://bordercheck.org"
                 if self.options.debug >= 1:
                     print "hostname.submit not found..."
+                with open('hostname.submit', 'w') as fout: 
+                    fout.write(bc)
+                hostname_path = open('hostname.submit')
+                url = [str(hostname_path.read())]
+                self.url=url[0]
         except:
             print "\nfailed to read file\n"
             traceback.print_exc()
