@@ -1,3 +1,15 @@
+Border Check v0.2018 - 2018
+========================
+
+CHANGES:
+* made code work again in 2018 on OSX 10.10.2
+* links to resources updated (bordercheck.org, GeoIP databases)
+* various OSX specific instructions added  to readme.
+* corrected broken OSM tile server [link](https://wiki.openstreetmap.org/wiki/Tile_servers) (mapbox blank map is broken).
+* added legacy geoip databases (needs updating)
+
+
+
 Border Check v0.2 - 2015
 ========================
 
@@ -24,6 +36,7 @@ Border Check has the following dependencies:
 
 ### Python:
 
+* [libpcap](https://pypi.org/project/libpcap/) 
 * [pygeoip](https://pypi.python.org/pypi/pygeoip/0.2.7) 
 * [lxml](https://pypi.python.org/pypi/lxml/3.2.3)
 * [biplist](https://pypi.python.org/pypi/biplist/0.5) (if you plan to use Safari)
@@ -32,9 +45,10 @@ For **Debian**-based systems (ex: Ubuntu), first run:
 
 `sudo apt-get install python-pip` to install [pip](https://pypi.python.org/pypi/pip/), python's super usefull package manager.
 
-If you already have pip: `pip install lxml` and `pip install pygeoip`
+If you already have pip: `pip install lxml` and `pip install pygeoip`.
 
-On **OSX** it's recommended you install [Homebrew](http://brew.sh/) first and use that to get [python + pip](https://github.com/mxcl/homebrew/wiki/Homebrew-and-Python).
+On **OSX** it's recommended you install [Homebrew](http://brew.sh/) first and use that to get [python + pip + easy_install](https://github.com/mxcl/homebrew/wiki/Homebrew-and-Python). 
+
 
 
 ### LFT
@@ -45,7 +59,8 @@ On **Debian** and **Ubuntu** it needs to be built from source and requires libpc
 
 To make this process more easy, BC (v0.2 2015) provides you a binary with the source. It is called `lft.linux` and is on folder `bin`.
 
-On **OSX** you can use Homebrew: `brew install lft` which will automatically download and build the package.
+On **OSX** you can use Homebrew: `brew install lft` which will automatically download and build the package. 
+(to install python-libpcap on **OSX**: `sudo easy_install pypcap` (and maybe: sudo easy_install pycap ....needs testing!))
 
 #### Note on provided LFT binary
 
@@ -59,6 +74,18 @@ Please consider that this is for convenience only, you are invited to make your 
 BC will automatically unpack the newest geoip databases on the first run. 
 
 Javascript mapping libraries are included in the package.
+
+If not (for example on OSX 10.10.2), manually install the GeoIP databases:
+
+Download the Binary / gzip legacy maps via http://dev.maxmind.com/geoip/legacy/geolite/ or below:
+
+[direct link GeoLiteCity](http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz)
+
+[direct link GeoLiteASN](http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz)
+
+Unpack the databses in the folder `maps`, so the path is `Border-Check/maps/GeoIPASNum.dat` and `Border-Check/maps/GeoLiteCity.dat` 
+
+
 
 
 ## Options and features:
@@ -84,6 +111,10 @@ bc [OPTIONS]
 Normal BC run:
 
 `$ python bc`
+
+**OSX**:
+
+`$ sudo python bc`
 
 Debug mode:
 

@@ -11,7 +11,7 @@ function initMap () {
 //	attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 //    })
 //    osm_quest = L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.png')
-    osm_sat = L.tileLayer('http://otile1.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.png')
+    osm_sat = L.tileLayer('https://a.tile.openstreetmap.org/{z}/{x}/{y}.png')
 //    streets = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.streets/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')
 //    light = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.light/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')
     dark = L.tileLayer('http://api.tiles.mapbox.com/v4/mapbox.dark/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoicmxsZmZmIiwiYSI6IkZyVmt4bUUifQ.R--ZDzdb-672Dx1E3suO9A')

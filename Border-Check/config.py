@@ -1,0 +1,1 @@
+then:darwin:F:/Users/then/Library/Application Support/Firefox/Profiles/uqk7h53s.default-1448018543872/places.sqlite
