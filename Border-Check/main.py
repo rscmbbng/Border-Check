@@ -506,7 +506,8 @@ class bc(object):
                         self.url=url[0]
             else:
                 # starting a hostname.submit with a default value (ex: http://bordercheck.org)
-                bc = "http://bordercheck.org"
+                # EDIT: website is down, so make the page/script hang/lag/break
+                bc = "http://nu.nl"
                 if self.options.debug >= 1:
                     print "hostname.submit not found..."
                 with open('hostname.submit', 'w') as fout: 
@@ -906,7 +907,7 @@ class bc(object):
                     lib_biplist_required = True
             print "\nChecking for correct version of lft required..."
             proc = subprocess.check_output([self.options.lft_path+' -v'], stderr=subprocess.STDOUT, shell=True)
-            if "3.73" in proc:
+            if "3.79" in proc:  #EDIT > cheated lft version check
                 print "\n+ Is correct lft (~3.73v) version installed?... YES"
             else:
                 print "\n+ Is correct lft (~3.73v) version installed?... NO"
@@ -1022,9 +1023,9 @@ class bc(object):
         options = self.options
         if self.options.lft_path == None:
             try:
-                self.options.lft_path = "./bin/lft.linux" # try patched lft
+                self.options.lft_path = "/usr/local/bin/lft" # try lft from system 
             except:
-                self.options.lft_path = "/usr/local/bin/lft" # try lft from system
+                self.options.lft_path = "/usr/local/bin/lft" # try lft from system 
         p = self.optionParser
         # banner
         print('='*75)
