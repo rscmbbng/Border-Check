@@ -1,0 +1,14 @@
+# Python Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+#MacOS Crap
+.DS_Store
+
+#border check work files 
+bc.status
+data.xml
+hostname.submit
+*.dat
+*.gz
